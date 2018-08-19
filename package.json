@@ -1,0 +1,23 @@
+{
+  "name": "deloreanbot",
+  "version": "1.0.0",
+  "description": "Discord bot",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/loparcog/delorianbot.git"
+  },
+  "author": "Giacomo Loparco",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/loparcog/delorianbot/issues"
+  },
+  "homepage": "https://github.com/loparcog/delorianbot#readme",
+  "dependencies": {
+    "discord.js": "^11.4.2",
+    "fast-csv": "^2.4.1"
+  }
+}
