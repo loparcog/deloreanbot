@@ -59,9 +59,8 @@ client.on("message", async message => {
 		message.channel.send(`Pong!\n${Math.floor(client.ping)}ms`);
 	}
 
-	// Rate function, needs to be edited each week
-	/*if(command === `${prefix}rate`){
-		var botmsg = [];
+	if(command === `${prefix}weekly`){
+		//give weekly playlist
 		var database = [];
 		var stream = fs.createReadStream("albumdatabase.csv");
 		csv
@@ -70,137 +69,68 @@ client.on("message", async message => {
 				database.push(data);
 			})
 			.on("end", function(){
-				console.log("done!");
-			});
-		message.channel.send("Which week is the album from?\nType `quit` at anytime to stop rating")
-			.then(msg => {
-				botmsg.push(msg);
-			});
-		var weekno = -1;
-		const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
-		collector.on("collect", message => {
-			if (collector.collected.array().length == 1 && parseInt(message.content) > 0 && parseInt(message.content) < 8){
-				weekno = parseInt(message.content);
-
-				var weekalbums = "";
-				if(weekno < 4){
-					for(var i = 0; i < 5; i++){
-						weekalbums += `${i + 1}. ${database[1 + i + ((weekno - 1) * 5)][0]} \n`;
-					}
-				}
-				else if (weekno = 4){
-					for(var i = 0; i < 6; i++){
-						weekalbums += `${i + 1}. ${database[1 + i + ((weekno - 1) * 5)][0]} \n`;
-					}
+				var weekno = -1;
+				if(args.length == 0){
+					message.channel.send("Which week's playlist would you like to view?");
+					const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
+					collector.on("collect", message => {
+						if (parseInt(message.content) > 0 && parseInt(message.content) < 8){
+							weekno = parseInt(message.content);
+								var weekalbums = "";
+							if(weekno < 4){
+								for(var i = 0; i < 5; i++){
+									weekalbums += `${i + 1}. ${database[1 + i + ((weekno - 1) * 5)][0]} \n`;
+								}
+							}
+							else if (weekno == 4){
+								for(var i = 0; i < 6; i++){
+									weekalbums += `${i + 1}. ${database[1 + i + ((weekno - 1) * 5)][0]} \n`;
+								}
+							}
+							else{
+								for(var i = 0; i < 5; i++){
+									weekalbums += `${i + 1}. ${database[2 + i + ((weekno - 1) * 5)][0]} \n`;
+								}
+							}
+								message.channel.send(`Week ${weekno} Playlist:\n` + "```" + weekalbums + "```");
+							collector.stop();
+						}
+						else{
+							message.channel.send("Week not identified!");
+							collector.stop();
+						}
+					});
+					collector.on("end", () => {
+						return;
+					});
 				}
 				else{
-					for(var i = 0; i < 5; i++){
-						weekalbums += `${i + 1}. ${database[2 + i + ((weekno - 1) * 5)][0]} \n`;
+					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 8){
+						weekno = parseInt(args[0]);
+						console.log(weekno);
+						var weekalbums = "";
+						if(weekno < 4){
+							for(var i = 0; i < 5; i++){
+								weekalbums += `${i + 1}. ${database[1 + i + ((weekno - 1) * 5)][0]} \n`;
+							}
+						}
+						else if (weekno == 4){
+							for(var i = 0; i < 6; i++){
+								weekalbums += `${i + 1}. ${database[1 + i + ((weekno - 1) * 5)][0]} \n`;
+							}
+						}
+						else{
+							for(var i = 0; i < 5; i++){
+								weekalbums += `${i + 1}. ${database[2 + i + ((weekno - 1) * 5)][0]} \n`;
+							}
+						}
+						message.channel.send(`Week ${weekno} Playlist:\n` + "```" + weekalbums + "```");
+					}
+					else{
+						message.channel.send("Week not identified!");
 					}
 				}
-
-				message.channel.send("Which album would you like to rate?\n```" + weekalbums + "\nquit. Return```")
-				.then(msg => {
-					botmsg.push(msg);
-				});
-			}
-			else if (collector.collected.array().length == 2 && parseInt(message.content) > 0 && parseInt(message.content) < 7){
-				if(message.content == 6 && weekno != 4){
-					message.channel.send("Option not understood, returning...")
-					.then(msg => {
-						msg.delete(5000);
-					});
-					collector.stop();
-					return;
-				}
-				if (weekno < 4){
-					albumno = parseInt(message.content) + ((weekno - 1) * 5);
-				}
-				else if (weekno = 4){
-					albumno = parseInt(message.content) + ((weekno - 1) * 5);
-				}
-				else{
-					albumno = 1 + parseInt(message.content) + ((weekno - 1) * 5);
-				}
-				message.channel.send(`What is your rating of ${database[albumno][0]}?\nPlease keep to the format of ` + 
-					"\n`<Number Rating from 0-5> <Word Review (Not needed)>`\n`Example: 4.5 great ear feel`")
-					.then(msg => {
-						botmsg.push(msg);
-					});
-			}
-			else if(collector.collected.array().length == 3){
-				message.channel.send("Processing now!")
-					.then(msg => {
-						botmsg.push(msg);
-					});
-				userIndex = -1;
-				for(var i = 0; i < database[0].length; i++){
-					console.log(database[0][i]);
-					if(database[0][i] == message.author.id){
-						userIndex = i;
-						break;
-					}
-				}
-				if(userIndex == -1){
-					database[0].push(message.author.id);
-					database[albumno][database[0].length - 1] = message.content;
-				}
-				else{
-					database[albumno][userIndex] = message.content;
-				}
-				var streamout = fs.createWriteStream("albumdatabase.csv");
-				csv
-					.write(database)
-					.pipe(streamout);
-
-				message.channel.send("Review saved!")
-					.then(msg => {
-						msg.delete(5000);
-					})
-					.catch();
-				collector.stop();
-				return;
-			}
-			else if(message.content == "quit"){
-				message.channel.send("Leaving ./rate...")
-					.then(msg => {
-						msg.delete(5000);
-					});
-				collector.stop();
-				return;
-			}
-			else{
-				message.channel.send("Option not understood, returning...")
-					.then(msg => {
-						msg.delete(5000);
-					})
-				collector.stop();
-				return;
-			}
-			//collector.stop();
-			//message.channel.send("Loading...");
 		});
-		collector.on("end", () => {
-			var msgs = collector.collected.array().length;
-			while(msgs > 0){
-				collector.collected.array()[msgs - 1].delete();
-				msgs--;
-			}
-			var bmsgs = botmsg.length;
-			while(bmsgs > 0){
-				botmsg[bmsgs - 1].delete();
-				bmsgs--;
-			}
-			return;
-		});
-		//can optomize reading to only store needed rows
-		//week 5 is 6 albums!
-
-	}
-	*/
-
-	if(command === `${prefix}weekly`){
-		//give weekly playlist
 	}
 
 	if(command === `${prefix}weather`){
