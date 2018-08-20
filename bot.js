@@ -11,6 +11,12 @@ const prefix = botSettings.prefix;
 
 client.on("ready", async () => {
 	console.log("Delorean ONLINE")
+	client.user.setPresence({
+		game: {name: "./help", 
+			url: "https://open.spotify.com/user/ubernex/playlist/1GLuALbdeHokAI3ky1YnJC?si=HcG2N7PZRamoIf2j0YwwWw",
+			type: 'LISTENING' },
+		status: 'online'
+	});
 
 	/*try{
 		let link = await client.generateInvite(['ADMINISTRATOR']);
@@ -56,7 +62,11 @@ client.on("message", async message => {
 	}
 
 	if(command === `${prefix}ping`){
-		message.channel.send(`Pong!\n${Math.floor(client.ping)}ms`);
+		message.delete(10000);
+		message.channel.send(`Pong!\n${Math.floor(client.ping)}ms`)
+			.then(msg => {
+				msg.delete(10000);
+			});
 	}
 
 	//Make it so you delete the messages if you do it manually
@@ -72,9 +82,14 @@ client.on("message", async message => {
 			.on("end", function(){
 				var weekno = -1;
 				if(args.length == 0){
-					message.channel.send("Which week's playlist would you like to view?");
+					var messages = {}
+					message.channel.send("Which week's playlist would you like to view?")
+						.then(msg => {
+							messages[0] = msg;
+						});
 					const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
 					collector.on("collect", message => {
+						messages[1] = message;
 						if (parseInt(message.content) > 0 && parseInt(message.content) < 8){
 							weekno = parseInt(message.content);
 								var weekalbums = "";
@@ -93,15 +108,22 @@ client.on("message", async message => {
 									weekalbums += `${i + 1}. ${database[2 + i + ((weekno - 1) * 5)][0]} \n`;
 								}
 							}
-								message.channel.send(`Week ${weekno} Playlist:\n` + "```" + weekalbums + "```");
+							message.channel.send(`Week ${weekno} Playlist:\n` + "```" + weekalbums + 
+								"```\nSpotify & Download Links:\n```" + database[weekno][1] + "```");
 							collector.stop();
 						}
 						else{
-							message.channel.send("Week not identified!");
+							message.channel.send("Week not identified!")
+								.then(msg => {
+									msg.delete(10000);
+								});
 							collector.stop();
 						}
 					});
 					collector.on("end", () => {
+						for(var i = 0; i < 2; i++){
+							messages[i].delete();
+						}
 						return;
 					});
 				}
@@ -128,7 +150,10 @@ client.on("message", async message => {
 							"```\nSpotify & Download Links:\n```" + database[weekno][1] + "```");
 					}
 					else{
-						message.channel.send("Week not identified!");
+						message.channel.send("Week not identified!")
+							.then(msg => {
+								msg.delete(10000);
+							});
 					}
 				}
 		});
@@ -170,6 +195,29 @@ client.on("message", async message => {
 		});
 	}
 
+	if(command === `${prefix}thisweek`){
+		var database = [];
+		var weekalbums = "";
+		var stream = fs.createReadStream("albumdatabase.csv");
+		csv
+			.fromStream(stream)
+			.on("data", function(data){
+				database.push(data);
+			})
+			.on("end", function(){
+				weekno = 7;
+				for(var i = 0; i < 5; i++){
+					weekalbums += `${i + 1}. ${database[2 + i + ((weekno - 1) * 5)][0]} \n`;
+				}
+				message.channel.send(`Week ${weekno} Playlist:\n` + "```" + weekalbums + 
+					"```\nSpotify & Download Links:\n```" + database[weekno][1] + "```");
+			});
+	}
+
+	if(command === `${prefix}code`){
+		message.channel.send("All bot code can be found @ https://github.com/loparcog/deloreanbot");
+	}
+
 	/*if(command === `${prefix}eval`){
 		if(message.author.id != '196388136656437250') return;
 		if(message.author.id == `196388136656437250`){
@@ -179,12 +227,18 @@ client.on("message", async message => {
 
 	if(command === `${prefix}help`){
 		message.channel.send('```ping: checks bot ping\nuserinfo <user>: gives information on given user\n' + 
-			'weekly: get past weeks playlist and links to them\nweather <location>: Find the weather of a given location```');
+			'weekly <week#>: get past weeks playlist and links to them\nthisweek: get the most recent week playlist\n' +
+			'weather <location>: Find the weather of a given location\ncode: get the code to this bot!```');
 	}
 
 	if(command === `${prefix}test`){
 		return;
 	}
+});
+
+client.on('guildMemberAdd', member => {
+	var role = member.guild.roles.find('name', 'member')
+	member.addRole(role);
 });
 
 client.login(botSettings.token);
