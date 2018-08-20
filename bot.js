@@ -60,7 +60,8 @@ client.on("message", async message => {
 	}
 
 	// Rate function, needs to be edited each week
-	if(command === `${prefix}rate`){
+	/*if(command === `${prefix}rate`){
+		var botmsg = [];
 		var database = [];
 		var stream = fs.createReadStream("albumdatabase.csv");
 		csv
@@ -71,7 +72,10 @@ client.on("message", async message => {
 			.on("end", function(){
 				console.log("done!");
 			});
-		message.channel.send("Which week is the album from?\nType `quit` at anytime to stop rating");
+		message.channel.send("Which week is the album from?\nType `quit` at anytime to stop rating")
+			.then(msg => {
+				botmsg.push(msg);
+			});
 		var weekno = -1;
 		const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
 		collector.on("collect", message => {
@@ -79,12 +83,12 @@ client.on("message", async message => {
 				weekno = parseInt(message.content);
 
 				var weekalbums = "";
-				if(weekno < 5){
+				if(weekno < 4){
 					for(var i = 0; i < 5; i++){
 						weekalbums += `${i + 1}. ${database[1 + i + ((weekno - 1) * 5)][0]} \n`;
 					}
 				}
-				else if (weekno = 5){
+				else if (weekno = 4){
 					for(var i = 0; i < 6; i++){
 						weekalbums += `${i + 1}. ${database[1 + i + ((weekno - 1) * 5)][0]} \n`;
 					}
@@ -95,28 +99,40 @@ client.on("message", async message => {
 					}
 				}
 
-				message.channel.send("Which album would you like to rate?\n```" + weekalbums + "\nquit. Return```");
+				message.channel.send("Which album would you like to rate?\n```" + weekalbums + "\nquit. Return```")
+				.then(msg => {
+					botmsg.push(msg);
+				});
 			}
 			else if (collector.collected.array().length == 2 && parseInt(message.content) > 0 && parseInt(message.content) < 7){
-				if(message.content == 6 && weekno != 5){
-					message.channel.send("Option not understood, returning...");
+				if(message.content == 6 && weekno != 4){
+					message.channel.send("Option not understood, returning...")
+					.then(msg => {
+						msg.delete(5000);
+					});
 					collector.stop();
 					return;
 				}
-				if (weekno < 5){
+				if (weekno < 4){
 					albumno = parseInt(message.content) + ((weekno - 1) * 5);
 				}
-				else if (weekno = 5){
+				else if (weekno = 4){
 					albumno = parseInt(message.content) + ((weekno - 1) * 5);
 				}
 				else{
 					albumno = 1 + parseInt(message.content) + ((weekno - 1) * 5);
 				}
 				message.channel.send(`What is your rating of ${database[albumno][0]}?\nPlease keep to the format of ` + 
-					"\n`<Number Rating from 0-5> <Word Review (Not needed)>`\n`Example: 4.5 great ear feel`");
+					"\n`<Number Rating from 0-5> <Word Review (Not needed)>`\n`Example: 4.5 great ear feel`")
+					.then(msg => {
+						botmsg.push(msg);
+					});
 			}
 			else if(collector.collected.array().length == 3){
-				message.channel.send("Processing now!");
+				message.channel.send("Processing now!")
+					.then(msg => {
+						botmsg.push(msg);
+					});
 				userIndex = -1;
 				for(var i = 0; i < database[0].length; i++){
 					console.log(database[0][i]);
@@ -126,7 +142,6 @@ client.on("message", async message => {
 					}
 				}
 				if(userIndex == -1){
-					console.log("not found! new user push");
 					database[0].push(message.author.id);
 					database[albumno][database[0].length - 1] = message.content;
 				}
@@ -138,18 +153,27 @@ client.on("message", async message => {
 					.write(database)
 					.pipe(streamout);
 
-				console.log("Done!");
-				message.channel.send("Review saved!");
+				message.channel.send("Review saved!")
+					.then(msg => {
+						msg.delete(5000);
+					})
+					.catch();
 				collector.stop();
 				return;
 			}
 			else if(message.content == "quit"){
-				message.channel.send("Leaving ./rate...");
+				message.channel.send("Leaving ./rate...")
+					.then(msg => {
+						msg.delete(5000);
+					});
 				collector.stop();
 				return;
 			}
 			else{
-				message.channel.send("Option not understood, returning...");
+				message.channel.send("Option not understood, returning...")
+					.then(msg => {
+						msg.delete(5000);
+					})
 				collector.stop();
 				return;
 			}
@@ -157,22 +181,46 @@ client.on("message", async message => {
 			//message.channel.send("Loading...");
 		});
 		collector.on("end", () => {
-			message.channel.send("Message Timeout!");
+			var msgs = collector.collected.array().length;
+			while(msgs > 0){
+				collector.collected.array()[msgs - 1].delete();
+				msgs--;
+			}
+			var bmsgs = botmsg.length;
+			while(bmsgs > 0){
+				botmsg[bmsgs - 1].delete();
+				bmsgs--;
+			}
 			return;
 		});
 		//can optomize reading to only store needed rows
 		//week 5 is 6 albums!
 
 	}
+	*/
+
+	if(command === `${prefix}weekly`){
+		//give weekly playlist
+	}
 
 	if(command === `${prefix}weather`){
-		if(args.length == 0) var loc = "Hamilton ON";
-		else var loc = args.join(" ");
-		weather.find({search: loc, degreeType: 'C'}, function(err, result){
+		if(args.length == 0){
+			var loc = "Hamilton ON";
+		} 
+		else{
+			var loc = args.join(" ");
+		}
+		weather.find({search: loc, degreeType: 'C'}, (err, result) => {
 			if(err) message.channel.send(err);
+			if(result[0] == undefined){
+				message.channel.send(`${loc} not found!`);
+				return;
+			}
 
-			var current = result[0].current;
-			var location = result[0].location;
+
+
+			let current = result[0].current;
+			let location = result[0].location;
 			let embed = new discord.RichEmbed()
 				.setDescription(`**${current.skytext}**`)
 				.setAuthor(`Weather for ${current.observationpoint}`)
@@ -187,6 +235,7 @@ client.on("message", async message => {
 				.setFooter(`Recorded @ ${current.observationtime} | ${current.date}`);
 			
 			message.channel.send(embed);
+			return;
 		});
 	}
 
@@ -199,6 +248,10 @@ client.on("message", async message => {
 
 	if(command === `${prefix}help`){
 		message.channel.send('```ping: checks bot ping\nuserinfo <user>: gives information on given user\nrate: rate albums from the weekly playlists\nweather <location>: Find the weather of a given location```');
+	}
+
+	if(command === `${prefix}test`){
+		return;
 	}
 });
 
