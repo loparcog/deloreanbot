@@ -1,7 +1,10 @@
 const botSettings = require("./botsettings.json");
 const discord = require("discord.js");
+
 const fs = require("fs");
 const csv = require("fast-csv");
+
+const weather = require("weather-js");
 
 const client = new discord.Client();
 const prefix = botSettings.prefix;
@@ -9,13 +12,13 @@ const prefix = botSettings.prefix;
 client.on("ready", async () => {
 	console.log("Delorean ONLINE")
 
-	/*try{
+	try{
 		let link = await client.generateInvite(['ADMINISTRATOR']);
 		console.log(`Invite: ${link}`);
 	}
 	catch(e){
 		console.log(e.stack);
-	}*/
+	}
 });
 
 client.on("message", async message => {
@@ -162,11 +165,40 @@ client.on("message", async message => {
 
 	}
 
+	if(command === `${prefix}weather`){
+		if(args.length == 0) var loc = "Hamilton ON";
+		else var loc = args.join(" ");
+		weather.find({search: loc, degreeType: 'C'}, function(err, result){
+			if(err) message.channel.send(err);
+
+			var current = result[0].current;
+			var location = result[0].location;
+			let embed = new discord.RichEmbed()
+				.setDescription(`**${current.skytext}**`)
+				.setAuthor(`Weather for ${current.observationpoint}`)
+				.setThumbnail(current.imageUrl)
+				.setColor("FFD700")
+				.addField('Timezone', `UTC ${location.timezone}`, true)
+				.addField('Degree Type', `˚C`, true)
+				.addField('Temperature', `${current.temperature}˚C`, true)
+				.addField('Feels Like', `${current.feelslike}˚C`, true)
+				.addField('Winds', current.winddisplay, true)
+				.addField('Humidity', `${current.humidity}%`, true)
+				.setFooter(`Recorded @ ${current.observationtime} | ${current.date}`);
+			
+			message.channel.send(embed);
+		});
+	}
+
 	if(command === `${prefix}eval`){
 		if(message.author.id != '196388136656437250') return;
 		if(message.author.id == `196388136656437250`){
 			message.channel.send(eval(args[0]));
 		}
+	}
+
+	if(command === `${prefix}help`){
+		message.channel.send('```ping: checks bot ping\nuserinfo <user>: gives information on given user\nrate: rate albums from the weekly playlists\nweather <location>: Find the weather of a given location```');
 	}
 });
 
