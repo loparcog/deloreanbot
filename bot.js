@@ -12,13 +12,13 @@ const prefix = botSettings.prefix;
 client.on("ready", async () => {
 	console.log("Delorean ONLINE")
 
-	try{
+	/*try{
 		let link = await client.generateInvite(['ADMINISTRATOR']);
 		console.log(`Invite: ${link}`);
 	}
 	catch(e){
 		console.log(e.stack);
-	}
+	}*/
 });
 
 client.on("message", async message => {
@@ -59,6 +59,7 @@ client.on("message", async message => {
 		message.channel.send(`Pong!\n${Math.floor(client.ping)}ms`);
 	}
 
+	//Make it so you delete the messages if you do it manually
 	if(command === `${prefix}weekly`){
 		//give weekly playlist
 		var database = [];
@@ -107,7 +108,6 @@ client.on("message", async message => {
 				else{
 					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 8){
 						weekno = parseInt(args[0]);
-						console.log(weekno);
 						var weekalbums = "";
 						if(weekno < 4){
 							for(var i = 0; i < 5; i++){
@@ -124,7 +124,8 @@ client.on("message", async message => {
 								weekalbums += `${i + 1}. ${database[2 + i + ((weekno - 1) * 5)][0]} \n`;
 							}
 						}
-						message.channel.send(`Week ${weekno} Playlist:\n` + "```" + weekalbums + "```");
+						message.channel.send(`Week ${weekno} Playlist:\n` + "```" + weekalbums + 
+							"```\nSpotify & Download Links:\n```" + database[weekno][1] + "```");
 					}
 					else{
 						message.channel.send("Week not identified!");
@@ -169,15 +170,16 @@ client.on("message", async message => {
 		});
 	}
 
-	if(command === `${prefix}eval`){
+	/*if(command === `${prefix}eval`){
 		if(message.author.id != '196388136656437250') return;
 		if(message.author.id == `196388136656437250`){
 			message.channel.send(eval(args[0]));
 		}
-	}
+	}*/
 
 	if(command === `${prefix}help`){
-		message.channel.send('```ping: checks bot ping\nuserinfo <user>: gives information on given user\nrate: rate albums from the weekly playlists\nweather <location>: Find the weather of a given location```');
+		message.channel.send('```ping: checks bot ping\nuserinfo <user>: gives information on given user\n' + 
+			'weekly: get past weeks playlist and links to them\nweather <location>: Find the weather of a given location```');
 	}
 
 	if(command === `${prefix}test`){
