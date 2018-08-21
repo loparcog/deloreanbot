@@ -233,7 +233,7 @@ client.on("message", async message => {
 
 	//may take out for public?
 	if(command === `${prefix}submit`){
-		message.channel.send("Submt your songs for the weekly playlist @ https://goo.gl/forms/otK2Uq3kNVE2Yk0x2" +
+		message.channel.send("Submt your albums for the weekly playlist @ https://goo.gl/forms/otK2Uq3kNVE2Yk0x2" +
 			"\nMcMaster student submissions only!");
 		return;
 	}
@@ -241,7 +241,7 @@ client.on("message", async message => {
 	if(command === `${prefix}code`){
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.0");
+			message.channel.send("V 1.01");
 		}
 		return;
 	}
@@ -312,9 +312,9 @@ client.on("message", async message => {
 	//MUSIC COMMAND (let people play music, possibly weekly playlist)
 });
 
-client.on('guildMemberAdd', member => {
+/*client.on('guildMemberAdd', member => {
 	var role = member.guild.roles.find('name', 'member')
 	member.addRole(role);
-});
+});*/
 
 client.login(botSettings.token);
