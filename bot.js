@@ -12,8 +12,8 @@ const prefix = botSettings.prefix;
 client.on("ready", async () => {
 	console.log("Delorean ONLINE")
 	client.user.setPresence({
-		game: {name: "./help", 
-			url: "https://open.spotify.com/user/ubernex/playlist/1GLuALbdeHokAI3ky1YnJC?si=HcG2N7PZRamoIf2j0YwwWw",
+		game: {name: "Week 7 | ./help", 
+			//url: "https://open.spotify.com/user/ubernex/playlist/1GLuALbdeHokAI3ky1YnJC?si=HcG2N7PZRamoIf2j0YwwWw",
 			type: 'LISTENING' },
 		status: 'online'
 	});
@@ -214,21 +214,21 @@ client.on("message", async message => {
 			});
 	}
 
-	if(command === `${prefix}code`){
-		message.channel.send("All bot code can be found @ https://github.com/loparcog/deloreanbot");
+	if(command === `${prefix}submitsong`){
+		message.channel.send("Submt your songs for the weekly playlist @ https://goo.gl/forms/otK2Uq3kNVE2Yk0x2");
 	}
 
-	/*if(command === `${prefix}eval`){
+	if(command === `${prefix}code`){
 		if(message.author.id != '196388136656437250') return;
 		if(message.author.id == `196388136656437250`){
-			message.channel.send(eval(args[0]));
+			message.channel.send("All bot code can be found @ https://github.com/loparcog/deloreanbot");
 		}
-	}*/
+	}
 
 	if(command === `${prefix}help`){
 		message.channel.send('```ping: checks bot ping\nuserinfo <user>: gives information on given user\n' + 
 			'weekly <week#>: get past weeks playlist and links to them\nthisweek: get the most recent week playlist\n' +
-			'weather <location>: Find the weather of a given location\ncode: get the code to this bot!```');
+			'weather <location>: Find the weather of a given location```');
 	}
 
 	if(command === `${prefix}test`){
