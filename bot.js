@@ -75,7 +75,6 @@ client.on("message", async message => {
 	}
 
 	//Put message into embeded
-	//WEEKLY CHANGE ???
 	if(command === `${prefix}weekly`){
 		//give weekly playlist
 		var database = [];
@@ -96,7 +95,8 @@ client.on("message", async message => {
 					const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
 					collector.on("collect", message => {
 						messages[1] = message;
-						if (parseInt(message.content) > 0 && parseInt(message.content) < 8){
+						//WEEKLY CHANGE
+						if (parseInt(message.content) > 0 && parseInt(message.content) < 9){
 							weekno = parseInt(message.content);
 								var weekalbums = "";
 							if(weekno < 4){
@@ -134,7 +134,8 @@ client.on("message", async message => {
 					});
 				}
 				else{
-					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 8){
+					//WEEKLY CHANGE
+					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 9){
 						weekno = parseInt(args[0]);
 						var weekalbums = "";
 						if(weekno < 4){
@@ -242,7 +243,7 @@ client.on("message", async message => {
 	}
 
 	if(command === `${prefix}suggestion`){
-
+		return;
 	}
 
 	if(command === `${prefix}test`){
