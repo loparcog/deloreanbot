@@ -11,9 +11,9 @@ const prefix = botSettings.prefix;
 
 client.on("ready", async () => {
 	console.log("Delorean ONLINE")
+	//WEEKLY CHANGE
 	client.user.setPresence({
-		game: {name: "Week 7 | ./help", 
-			//url: "https://open.spotify.com/user/ubernex/playlist/1GLuALbdeHokAI3ky1YnJC?si=HcG2N7PZRamoIf2j0YwwWw",
+		game: {name: "Week 8 | ./help", 
 			type: 'LISTENING' },
 		status: 'online'
 	});
@@ -74,7 +74,8 @@ client.on("message", async message => {
 			});
 	}
 
-	//Make it so you delete the messages if you do it manually
+	//Put message into embeded
+	//WEEKLY CHANGE ???
 	if(command === `${prefix}weekly`){
 		//give weekly playlist
 		var database = [];
@@ -164,6 +165,7 @@ client.on("message", async message => {
 		});
 	}
 
+	//make option to change degrees
 	if(command === `${prefix}weather`){
 		if(args.length == 0){
 			var loc = "Hamilton ON";
@@ -210,7 +212,8 @@ client.on("message", async message => {
 				database.push(data);
 			})
 			.on("end", function(){
-				weekno = 7;
+				//WEEKLY CHANGE
+				weekno = 8;
 				for(var i = 0; i < 5; i++){
 					weekalbums += `${i + 1}. ${database[2 + i + ((weekno - 1) * 5)][0]} \n`;
 				}
@@ -219,6 +222,7 @@ client.on("message", async message => {
 			});
 	}
 
+	//may take out for public?
 	if(command === `${prefix}submit`){
 		message.channel.send("Submt your songs for the weekly playlist @ https://goo.gl/forms/otK2Uq3kNVE2Yk0x2" +
 			"\nMcMaster student submissions only!");
@@ -237,9 +241,15 @@ client.on("message", async message => {
 			'weather <location>: Find the weather of a given location\nsubmit: Submit a song for the weekly playlist```');
 	}
 
+	if(command === `${prefix}suggestion`){
+
+	}
+
 	if(command === `${prefix}test`){
 		return;
 	}
+
+	//SUGGESTION COMMAND (DM from the bot to me any suggestions)
 });
 
 client.on('guildMemberAdd', member => {
