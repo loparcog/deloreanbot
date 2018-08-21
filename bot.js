@@ -257,7 +257,7 @@ client.on("message", async message => {
 		if(args.length == 0){
 			message.channel.send("What would you like to suggest?")
 				.then(msg => {
-					message.delete(10000);
+					msg.delete(10000);
 				});
 			const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
 			collector.on("collect", message => {
