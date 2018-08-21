@@ -268,6 +268,10 @@ client.on("message", async message => {
 					.then(msg => {
 						msg.delete(10000);
 					});
+				collector.stop()
+			});
+			collector.on("end", () => {
+			return;
 			});
 		}
 		else{
