@@ -262,7 +262,7 @@ client.on("message", async message => {
 			const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
 			collector.on("collect", message => {
 				client.users.get(`196388136656437250`).send(message.content + "\n" + 
-					`${message.author.username}#${message.author.discriminator}`);
+					`${message.author.username}#${message.author.discriminator}, from ${message.guild.name}`);
 				message.delete(10000);
 				message.channel.send("Suggestion sent!")
 					.then(msg => {
@@ -271,7 +271,8 @@ client.on("message", async message => {
 			});
 		}
 		else{
-			client.users.get(`196388136656437250`).send(message.content.slice(12) + "\n" + `${message.author.username}#${message.author.discriminator}`);	
+			client.users.get(`196388136656437250`).send(message.content.slice(12) + "\n" + 
+				`${message.author.username}#${message.author.discriminator}, from ${message.guild.name}`);	
 		}
 		return;
 	}
