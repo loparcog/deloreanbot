@@ -18,6 +18,7 @@ client.on("ready", async () => {
 		status: 'online'
 	});
 
+	//fix invite, add in about function, invite function
 	/*try{
 		let link = await client.generateInvite(['ADMINISTRATOR']);
 		console.log(`Invite: ${link}`);
@@ -36,6 +37,10 @@ client.on("message", async message => {
 	let args = msg.slice(1);
 
 	if(!command.startsWith(prefix)) return;
+
+	if(command === `${prefix}about`){
+		return;
+	}
 
 	if(command === `${prefix}userinfo`){
 		var user = message.author;
@@ -215,18 +220,19 @@ client.on("message", async message => {
 	}
 
 	if(command === `${prefix}submit`){
-		message.channel.send("Submt your songs for the weekly playlist @ https://goo.gl/forms/otK2Uq3kNVE2Yk0x2");
+		message.channel.send("Submt your songs for the weekly playlist @ https://goo.gl/forms/otK2Uq3kNVE2Yk0x2" +
+			"\nMcMaster student submissions only!");
 	}
 
 	if(command === `${prefix}code`){
-		if(message.author.id != '196388136656437250') return;
 		if(message.author.id == `196388136656437250`){
 			message.channel.send("All bot code can be found @ https://github.com/loparcog/deloreanbot");
 		}
+		return;
 	}
 
 	if(command === `${prefix}help`){
-		message.channel.send('```ping: checks bot ping\nuserinfo <user>: gives information on given user\n' + 
+		message.channel.send('```~BOT COMMANDS~\nping: checks bot ping\nuserinfo <user>: gives information on given user\n' + 
 			'weekly <week#>: get past weeks playlist and links to them\nthisweek: get the most recent week playlist\n' +
 			'weather <location>: Find the weather of a given location\nsubmit: Submit a song for the weekly playlist```');
 	}
