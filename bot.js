@@ -10,7 +10,7 @@ const client = new discord.Client();
 const prefix = botSettings.prefix;
 
 client.on("ready", async () => {
-	console.log("Delorean ONLINE")
+	console.log("Delorean ONLINE");
 	//WEEKLY CHANGE
 	client.user.setPresence({
 		game: {name: "Week 8 | ./help", 
@@ -20,7 +20,8 @@ client.on("ready", async () => {
 
 	//fix invite, add in about function, invite function
 	/*try{
-		let link = await client.generateInvite(['ADMINISTRATOR']);
+		let link = await client.generateInvite(['ADD_REACTIONS', 'SEND_MESSAGES', 'MANAGE_MESSAGES', 
+			'EMBED_LINKS', 'CONNECT', 'SPEAK']);
 		console.log(`Invite: ${link}`);
 	}
 	catch(e){
@@ -38,14 +39,12 @@ client.on("message", async message => {
 
 	if(!command.startsWith(prefix)) return;
 
-	if(command === `${prefix}about`){
-		return;
-	}
-
 	if(command === `${prefix}userinfo`){
 		var user = message.author;
-		if(args.length != 0){ 
-			user = client.users.get(args[0].slice(3,-1));
+		if(args.length != 0){
+			var userID = args[0].slice(2, -1);
+			if(user.startsWith("!")) userID = userID.slice(1);
+			user = client.users.get(userID);
 			if(user == undefined){
 				message.channel.send("User not found!");
 				return;
@@ -72,6 +71,7 @@ client.on("message", async message => {
 			.then(msg => {
 				msg.delete(10000);
 			});
+		return;
 	}
 
 	//Put message into embeded
@@ -161,6 +161,7 @@ client.on("message", async message => {
 							.then(msg => {
 								msg.delete(10000);
 							});
+						return;
 					}
 				}
 		});
@@ -221,12 +222,14 @@ client.on("message", async message => {
 				message.channel.send(`Week ${weekno} Playlist:\n` + "```" + weekalbums + 
 					"```\nSpotify & Download Links:\n```" + database[weekno][1] + "```");
 			});
+		return;
 	}
 
 	//may take out for public?
 	if(command === `${prefix}submit`){
 		message.channel.send("Submt your songs for the weekly playlist @ https://goo.gl/forms/otK2Uq3kNVE2Yk0x2" +
 			"\nMcMaster student submissions only!");
+		return;
 	}
 
 	if(command === `${prefix}code`){
@@ -239,10 +242,37 @@ client.on("message", async message => {
 	if(command === `${prefix}help`){
 		message.channel.send('```~BOT COMMANDS~\nping: checks bot ping\nuserinfo <user>: gives information on given user\n' + 
 			'weekly <week#>: get past weeks playlist and links to them\nthisweek: get the most recent week playlist\n' +
-			'weather <location>: Find the weather of a given location\nsubmit: Submit a song for the weekly playlist```');
+			'weather <location>: Find the weather of a given location\nsubmit: Submit a song for the weekly playlist\n' +
+			'suggestion <msg>: suggest a function for the bot\nabout: bot information```');
+		return;
 	}
 
 	if(command === `${prefix}suggestion`){
+		if(args.length == 0){
+			message.channel.send("What would you like to suggest?");
+				.then(msg => {
+					message.delete(10000);
+				});
+			const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
+			collector.on("collect", message => {
+				client.users.get(`196388136656437250`).dmChannel.send(message.content);
+				message.delete(10000);
+				message.channel.send("Suggestion sent!")
+					.then(msg => {
+						msg.delete(10000);
+					});
+			}
+		}
+		else{
+			client.users.get(`196388136656437250`).dmChannel.send(message.content);	
+		}
+		return;
+	}
+
+	if(command === `${prefix}about`){
+		message.channel.send("DeLorean Bot was made by Giacomo#7368 for the McMaster MOOD Club, coded in JS and " +
+			"updated weekly. For more information on the code or bot functionality, please contact myself through " +
+			"./suggestion or directly through DMs.");
 		return;
 	}
 
@@ -250,7 +280,9 @@ client.on("message", async message => {
 		return;
 	}
 
-	//SUGGESTION COMMAND (DM from the bot to me any suggestions)
+	//RANK COMMAND (Let people add their own ranks)
+
+	//MUSIC COMMAND (let people play music, possibly weekly playlist)
 });
 
 client.on('guildMemberAdd', member => {
