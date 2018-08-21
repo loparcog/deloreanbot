@@ -240,7 +240,8 @@ client.on("message", async message => {
 
 	if(command === `${prefix}code`){
 		if(message.author.id == `196388136656437250`){
-			message.channel.send("All bot code can be found @ https://github.com/loparcog/deloreanbot");
+			//CHANGE PER UPDATE
+			message.channel.send("V 1.0");
 		}
 		return;
 	}
@@ -248,8 +249,9 @@ client.on("message", async message => {
 	if(command === `${prefix}help`){
 		message.channel.send('```~BOT COMMANDS~\nping: checks bot ping\nuserinfo <user>: gives information on given user\n' + 
 			'weekly <week#>: get past weeks playlist and links to them\nthisweek: get the most recent week playlist\n' +
-			'weather <location>: Find the weather of a given location\nsubmit: Submit a song for the weekly playlist\n' +
-			'suggestion <msg>: suggest a function for the bot\nabout: bot information```');
+			'weather <location>: find the weather of a given location\nsubmit: submit a song for the weekly playlist\n' +
+			'suggestion <msg>: suggest a function for the bot\nabout: bot information\n' + 
+			'invite: get an invite link to your server```');
 		return;
 	}
 
@@ -285,6 +287,19 @@ client.on("message", async message => {
 		message.channel.send("DeLorean Bot was made by Giacomo#7368 for the McMaster MOOD Club, coded in JS and " +
 			"updated weekly. For more information on the code or bot functionality, please contact myself through " +
 			"./suggestion or directly through DMs.");
+		return;
+	}
+
+	if(command === `${prefix}invite`){
+		try{
+			let link = await client.generateInvite(['ADD_REACTIONS', 'SEND_MESSAGES', 'MANAGE_MESSAGES', 
+				'EMBED_LINKS', 'CONNECT', 'SPEAK']);
+			message.channel.send(`Invite: ${link}`);
+		}
+		catch(e){
+			console.log(e.stack);
+			message.channel.send("Error");
+		}
 		return;
 	}
 
