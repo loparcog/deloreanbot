@@ -214,7 +214,7 @@ client.on("message", async message => {
 			});
 	}
 
-	if(command === `${prefix}submitsong`){
+	if(command === `${prefix}submit`){
 		message.channel.send("Submt your songs for the weekly playlist @ https://goo.gl/forms/otK2Uq3kNVE2Yk0x2");
 	}
 
@@ -228,7 +228,7 @@ client.on("message", async message => {
 	if(command === `${prefix}help`){
 		message.channel.send('```ping: checks bot ping\nuserinfo <user>: gives information on given user\n' + 
 			'weekly <week#>: get past weeks playlist and links to them\nthisweek: get the most recent week playlist\n' +
-			'weather <location>: Find the weather of a given location```');
+			'weather <location>: Find the weather of a given location\nsubmit: Submit a song for the weekly playlist```');
 	}
 
 	if(command === `${prefix}test`){
