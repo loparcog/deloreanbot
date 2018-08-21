@@ -43,7 +43,7 @@ client.on("message", async message => {
 		var user = message.author;
 		if(args.length != 0){
 			var userID = args[0].slice(2, -1);
-			if(user.startsWith("!")) userID = userID.slice(1);
+			if(userID.startsWith("!")) userID = userID.slice(1);
 			user = client.users.get(userID);
 			if(user == undefined){
 				message.channel.send("User not found!");
@@ -249,22 +249,23 @@ client.on("message", async message => {
 
 	if(command === `${prefix}suggestion`){
 		if(args.length == 0){
-			message.channel.send("What would you like to suggest?");
+			message.channel.send("What would you like to suggest?")
 				.then(msg => {
 					message.delete(10000);
 				});
 			const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
 			collector.on("collect", message => {
-				client.users.get(`196388136656437250`).dmChannel.send(message.content);
+				client.users.get(`196388136656437250`).send(message.content + "\n" + 
+					`${message.author.username}#${message.author.discriminator}`);
 				message.delete(10000);
 				message.channel.send("Suggestion sent!")
 					.then(msg => {
 						msg.delete(10000);
 					});
-			}
+			});
 		}
 		else{
-			client.users.get(`196388136656437250`).dmChannel.send(message.content);	
+			client.users.get(`196388136656437250`).send(message.content.slice(12) + "\n" + `${message.author.username}#${message.author.discriminator}`);	
 		}
 		return;
 	}
