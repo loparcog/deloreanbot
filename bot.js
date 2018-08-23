@@ -430,7 +430,7 @@ client.on("message", async message => {
 							csv
 								.writeToPath("hottake.csv", database)
 								.on("finish", function() {
-									message.channel.send(`Hot take #${len} stored!`);
+									message.channel.send(`Hot take #${len + 1} stored!`);
 									return;
 								});
 						}, 500);
@@ -479,6 +479,21 @@ client.on("message", async message => {
 				}
 			});
 		return;
+	}
+
+	if(command === `${totalhottakes}`){
+		var rs = fs.createReadStream('hottake.csv');
+		database = [];
+		csv
+			.fromStream(rs)
+			.on("data", function(data){
+				database.push(data);
+			})
+			.on("end", function(){
+				var len = database.length + 204;
+				message.channel.send(`Tommy has given ${len} hot takes!`);
+				return;
+			});
 	}
 
 	//HOT TAKE (store tommys last message, accessable in csv)
