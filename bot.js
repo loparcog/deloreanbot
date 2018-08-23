@@ -252,7 +252,8 @@ client.on("message", async message => {
 			'weekly <week#>: get past weeks playlist and links to them\nthisweek: get the most recent week playlist\n' +
 			'weather <location>: find the weather of a given location\nsubmit: submit a song for the weekly playlist\n' +
 			'suggestion <msg>: suggest a function for the bot\nabout: bot information\n' + 
-			'invite: get an invite link to your server```');
+			'invite: get an invite link to your server\nhottake: store tommys latest hot take\n' + 
+			'gethottake <index>: get chosen hot take```');
 		return;
 	}
 
