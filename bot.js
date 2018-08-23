@@ -491,8 +491,10 @@ client.on("message", async message => {
 			})
 			.on("end", function(){
 				var len = database.length + 204;
+				setTimeout(function() {
 				message.channel.send(`Tommy has given ${len} hot takes!`);
 				return;
+				}, 500);
 			});
 	}
 
