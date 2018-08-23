@@ -7,6 +7,7 @@ const csv = require("fast-csv");
 
 const weather = require("weather-js");
 
+
 const botSettings = {
 	token: process.env.token,
 	prefix: process.env.prefix
@@ -405,31 +406,39 @@ client.on("message", async message => {
 	}*/
 
 	if(command === `${prefix}hottake`){
-		message.guild.fetchMember('279161746193776641', true)
+		//Tommy ID: 279161746193776641
+		message.guild.fetchMember(`279161746193776641`, true)
 			.then(usr => {
-				if(usr == null || usr.user.lastMessage == null){
-					message.channel.send("Can't find hottake!");
+				if(usr == undefined || usr.user.lastMessage == null){
+					message.channel.send("Can't find hot take!");
 					return;
 				}
 				var last = (usr.user.lastMessage.content);
 				var rs = fs.createReadStream('hottake.csv');
-				var ws = fs.createWriteStream('hottake.csv');
-				database = [];
+				var database = [];
 				csv
 					.fromStream(rs)
 					.on("data", function(data){
 						database.push(data);
 					})
 					.on("end", function(){
-						database.push(last + " " + Date.now());
-						csv
-							.write(database, {headers:true})
-							.pipe(ws);
+						var len = database.length;
+						var time = new Date().toString();
+						database.push([last, time])
+						setTimeout(function() {
+							csv
+								.writeToPath("hottake.csv", database)
+								.on("finish", function() {
+									message.channel.send(`Hot take #${len} stored!`);
+									return;
+								});
+						}, 500);
 					});
 
-			});
-			message.channel.send(`Hottake #${database.length} stored!`);
-			return;
+			})
+			.catch(err => {
+				message.channel.send("Can't find hot take!")
+			})
 
 	}
 
@@ -459,7 +468,13 @@ client.on("message", async message => {
 					message.channel.send("Hot take not found!");
 				}
 				else{
-					message.channel.send(database[index]);
+					var time = new Date(database[index][1]);
+					let embed = new discord.RichEmbed()
+						.setAuthor(`Hot Take #${index + 1}`)
+						.setDescription(database[index][0])
+						.setTimestamp(time)
+						.setColor(`8CB8FF`);
+					message.channel.send(embed);
 				}
 			});
 		return;
