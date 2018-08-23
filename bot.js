@@ -253,7 +253,7 @@ client.on("message", async message => {
 			'weather <location>: find the weather of a given location\nsubmit: submit a song for the weekly playlist\n' +
 			'suggestion <msg>: suggest a function for the bot\nabout: bot information\n' + 
 			'invite: get an invite link to your server\nhottake: store tommys latest hot take\n' + 
-			'gethottake <index>: get chosen hot take```');
+			'gethottake <index>: get chosen hot take\ntotalhottakes: gives total number of tommy hot takes```');
 		return;
 	}
 
