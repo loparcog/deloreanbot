@@ -481,7 +481,7 @@ client.on("message", async message => {
 		return;
 	}
 
-	if(command === `${totalhottakes}`){
+	/*if(command === `${totalhottakes}`){
 		var rs = fs.createReadStream('hottake.csv');
 		database = [];
 		csv
@@ -490,13 +490,9 @@ client.on("message", async message => {
 				database.push(data);
 			})
 			.on("end", function(){
-				var len = database.length + 204;
-				setTimeout(function() {
-				message.channel.send(`Tommy has given ${len} hot takes!`);
-				return;
-				}, 500);
+				console.log(database.length)
 			});
-	}
+	}*/
 
 	//HOT TAKE (store tommys last message, accessable in csv)
 
