@@ -407,7 +407,7 @@ client.on("message", async message => {
 	if(command === `${prefix}hottake`){
 		message.guild.fetchMember('279161746193776641', true)
 			.then(usr => {
-				if(usr == null){
+				if(usr == null || usr.user.lastMessage == null){
 					message.channel.send("Can't find hottake!");
 					return;
 				}
