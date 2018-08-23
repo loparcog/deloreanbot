@@ -1,4 +1,4 @@
-const botSettings = require("./botsettings.json");
+//const botSettings = require("./botsettings.json");
 //Only for personal runtime
 const discord = require("discord.js");
 
@@ -7,10 +7,10 @@ const csv = require("fast-csv");
 
 const weather = require("weather-js");
 
-/*const botSettings = {
+const botSettings = {
 	token: process.env.token,
 	prefix: process.env.prefix
-}*/
+}
 
 const client = new discord.Client();
 const prefix = botSettings.prefix;
