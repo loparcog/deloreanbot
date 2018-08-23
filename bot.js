@@ -1,4 +1,4 @@
-//const botSettings = require("./botsettings.json");
+const botSettings = require("./botsettings.json");
 //Only for personal runtime
 const discord = require("discord.js");
 
@@ -7,10 +7,10 @@ const csv = require("fast-csv");
 
 const weather = require("weather-js");
 
-const botSettings = {
+/*const botSettings = {
 	token: process.env.token,
 	prefix: process.env.prefix
-}
+}*/
 
 const client = new discord.Client();
 const prefix = botSettings.prefix;
@@ -27,7 +27,7 @@ client.on("ready", async () => {
 	//fix invite, add in about function, invite function
 	/*try{
 		let link = await client.generateInvite(['ADD_REACTIONS', 'SEND_MESSAGES', 'MANAGE_MESSAGES', 
-			'EMBED_LINKS', 'CONNECT', 'SPEAK']);
+			'EMBED_LINKS']);
 		console.log(`Invite: ${link}`);
 	}
 	catch(e){
@@ -241,7 +241,7 @@ client.on("message", async message => {
 	if(command === `${prefix}code`){
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.01");
+			message.channel.send("V 1.02");
 		}
 		return;
 	}
@@ -303,9 +303,169 @@ client.on("message", async message => {
 		return;
 	}
 
-	if(command === `${prefix}test`){
+	//Working on embed
+	/*if(command === `${prefix}test`){
+		//give weekly playlist
+		var database = [];
+		var stream = fs.createReadStream("albumdatabase.csv");
+		csv
+			.fromStream(stream)
+			.on("data", function(data){
+				database.push(data);
+			})
+			.on("end", function(){
+				var weekno = -1;
+				if(args.length == 0){
+					var messages = {}
+					message.channel.send("Which week's playlist would you like to view?")
+						.then(msg => {
+							messages[0] = msg;
+						});
+					const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
+					collector.on("collect", message => {
+						messages[1] = message;
+						//WEEKLY CHANGE
+						if (parseInt(message.content) > 0 && parseInt(message.content) < 9){
+							weekno = parseInt(message.content);
+							var weekalbums = new discord.RichEmbed()
+								.setAuthor(`Albums of Week ${weekno}`)
+								.setThumbnail(database[weekno][2]);
+							var album = []
+							if(weekno < 4){
+								for(var i = 0; i < 5; i++){
+									album = database[1 + i + ((weekno - 1) * 5)][0].split("-")
+									weekalbums.addField(album[0], album[1], true);
+								}
+							}
+							else if (weekno == 4){
+								for(var i = 0; i < 6; i++){
+									album = database[1 + i + ((weekno - 1) * 5)][0].split("-")
+									weekalbums.addField(album[0], album[1], true);
+								}
+							}
+							else{
+								for(var i = 0; i < 5; i++){
+									album = database[1 + i + ((weekno - 1) * 5)][0].split("-")
+									weekalbums.addField(album[0], album[1], true);
+								}
+							}
+							weekalbums.addField("Resources", database[weekno][1]);
+							message.channel.send(weekalbums);
+							message.channel.send(`Week ${weekno} Playlist:\n` + "```" + weekalbums + 
+								"```\nSpotify & Download Links:\n```" + database[weekno][1] + "```");
+							collector.stop();
+						}
+						else{
+							message.channel.send("Week not identified!")
+								.then(msg => {
+									msg.delete(10000);
+								});
+							collector.stop();
+						}
+					});
+					collector.on("end", () => {
+						for(var i = 0; i < 2; i++){
+							messages[i].delete();
+						}
+						return;
+					});
+				}
+				else{
+					//WEEKLY CHANGE
+					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 9){
+						weekno = parseInt(args[0]);
+						var weekalbums = "";
+						if(weekno < 4){
+							for(var i = 0; i < 5; i++){
+								weekalbums += `${i + 1}. ${database[1 + i + ((weekno - 1) * 5)][0]} \n`;
+							}
+						}
+						else if (weekno == 4){
+							for(var i = 0; i < 6; i++){
+								weekalbums += `${i + 1}. ${database[1 + i + ((weekno - 1) * 5)][0]} \n`;
+							}
+						}
+						else{
+							for(var i = 0; i < 5; i++){
+								weekalbums += `${i + 1}. ${database[2 + i + ((weekno - 1) * 5)][0]} \n`;
+							}
+						}
+						message.channel.send(`Week ${weekno} Playlist:\n` + "```" + weekalbums + 
+							"```\nSpotify & Download Links:\n```" + database[weekno][1] + "```");
+					}
+					else{
+						message.channel.send("Week not identified!")
+							.then(msg => {
+								msg.delete(10000);
+							});
+						return;
+					}
+				}
+		});
+	}*/
+
+	if(command === `${prefix}hottake`){
+		message.guild.fetchMember('279161746193776641', true)
+			.then(usr => {
+				if(usr == null){
+					message.channel.send("Can't find hottake!");
+					return;
+				}
+				var last = (usr.user.lastMessage.content);
+				var rs = fs.createReadStream('hottake.csv');
+				var ws = fs.createWriteStream('hottake.csv');
+				database = [];
+				csv
+					.fromStream(rs)
+					.on("data", function(data){
+						database.push(data);
+					})
+					.on("end", function(){
+						database.push(last + " " + Date.now());
+						csv
+							.write(database, {headers:true})
+							.pipe(ws);
+					});
+
+			});
+			message.channel.send(`Hottake #${database.length} stored!`);
+			return;
+
+	}
+
+	if(command === `${prefix}getcsv`){
+		if(message.author.id == `196388136656437250`){
+			message.channel.sendFile('./hottake.csv');
+		}
 		return;
 	}
+
+	if(command === `${prefix}gethottake`){
+		var rs = fs.createReadStream('hottake.csv');
+		database = [];
+		csv
+			.fromStream(rs)
+			.on("data", function(data){
+				database.push(data);
+			})
+			.on("end", function(){
+				if(args.length == 0){
+					var index = Math.floor(Math.random() * database.length);
+				}
+				else{
+					var index = (parseInt(args[0])) - 1;
+				}
+				if(database[index] == null){
+					message.channel.send("Hot take not found!");
+				}
+				else{
+					message.channel.send(database[index]);
+				}
+			});
+		return;
+	}
+
+	//HOT TAKE (store tommys last message, accessable in csv)
 
 	//RANK COMMAND (Let people add their own ranks)
 
