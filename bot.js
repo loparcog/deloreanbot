@@ -371,7 +371,7 @@ client.on("message", async message => {
 		return;
 	}
 
-	if(command === `${prefix}htt`){
+	if(command === `${prefix}hottake`){
 		if(args.length == 0 || args[0] === 'help'){
 			let embed = new discord.RichEmbed()
 				.setAuthor("Hot Take Help", client.user.avatarURL)
