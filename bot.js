@@ -228,9 +228,6 @@ client.on("message", async message => {
 					});
 				return;
 			}
-
-
-
 			let current = result[0].current;
 			let location = result[0].location;
 			let embed = new discord.RichEmbed()
@@ -239,7 +236,7 @@ client.on("message", async message => {
 				.setThumbnail(current.imageUrl)
 				.setColor("98FB98")
 				.addField('Timezone', `UTC ${location.timezone}`, true)
-				.addField('Temperature (F)', `${(current.temperature * 1.8) + 32} F`, true)
+				.addField('Temperature (F)', `${Math.round((current.temperature * 1.8) + 32)} F`, true)
 				.addField('Temperature (˚C)', `${current.temperature}˚C`, true)
 				.addField('Feels Like', `${current.feelslike}˚C`, true)
 				.addField('Winds', current.winddisplay, true)
@@ -285,7 +282,7 @@ client.on("message", async message => {
 		//Personal, use to track changes
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.11 (new user search)");
+			message.channel.send("V 1.12 (round, attempt fix for get)");
 		}
 		return;
 	}
@@ -335,7 +332,7 @@ client.on("message", async message => {
 			});
 		}
 		else{
-			client.users.get(`196388136656437250`).send(message.content.slice(12) + "\n" + 
+			client.users.get(`196388136656437250`).send(message.content.slice(9) + "\n" + 
 				`${message.author.username}#${message.author.discriminator}, from ${message.guild.name}`);	
 			message.delete(10000);
 			message.channel.send("Suggestion sent!")
@@ -436,7 +433,7 @@ client.on("message", async message => {
 				}
 			}
 
-			//needs more error detection
+			//needs more error detection for ./ht @delorean and ./ht @delorean 5
 			else if(args[0] === 'get'){
 				if(inbase = false){
 					message.channel.send("Server not found!")
@@ -452,7 +449,7 @@ client.on("message", async message => {
 					var userID = args[1].slice(2, -1);
 					if(userID.startsWith("!")) userID = userID.slice(1);
 					var user = getUser(userID, message);
-					if(user == undefined || user.lastMessage == null){
+					if(user == undefined || user.lastMessage == null || user.bot){
 						message.channel.send("User/message not found!")
 							.then(msg => {
 								msg.delete(10000);
@@ -473,7 +470,7 @@ client.on("message", async message => {
 					var userID = args[1].slice(2, -1);
 					if(userID.startsWith("!")) userID = userID.slice(1);
 					var user = getUser(userID, message);
-					if(user == undefined || user.lastMessage == null){
+					if(user == undefined || user.lastMessage == null || user.bot){
 						message.channel.send("User/message not found!")
 							.then(msg => {
 								msg.delete(10000);
