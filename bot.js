@@ -71,7 +71,7 @@ client.on("message", async message => {
 		let embed = new discord.RichEmbed()
 			.setAuthor("User Info", message.author.avatarURL)
 			.setDescription(`Requested by ${message.author.username}`)
-			.setColor("F7D0F7")
+			.setColor("98FB98")
 			.addField("Full Username", `${user.username}#${user.discriminator}`, true)
 			.addField("User ID", user.id, true)
 			.addField("Account Creation", user.createdAt)
@@ -88,7 +88,7 @@ client.on("message", async message => {
 		let embed = new discord.RichEmbed()
 			.setAuthor("Server Info", message.author.avatarURL)
 			.setDescription(`Requested by ${message.author.username}`)
-			.setColor("F7D0F7")
+			.setColor("98FB98")
 			.addField("Server Name", server.name, true)
 			.addField("Server ID", server.id, true)
 			.addField("Owner", `${server.owner.user.username}#${server.owner.user.discriminator}`, true)
@@ -231,7 +231,7 @@ client.on("message", async message => {
 				.setDescription(`**${current.skytext}**`)
 				.setAuthor(`Weather for ${current.observationpoint}`)
 				.setThumbnail(current.imageUrl)
-				.setColor("FFD700")
+				.setColor("98FB98")
 				.addField('Timezone', `UTC ${location.timezone}`, true)
 				.addField('Degree Type', `˚C`, true)
 				.addField('Temperature', `${current.temperature}˚C`, true)
@@ -279,7 +279,7 @@ client.on("message", async message => {
 		//Personal, use to track changes
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.06 (JSON hottake partial)");
+			message.channel.send("V 1.07 (hottake get finished)");
 		}
 		return;
 	}
@@ -425,7 +425,57 @@ client.on("message", async message => {
 			}
 
 			else if(args[0] === 'get'){
-				message.channel.send("Under construction");
+				if (args.length == 1){
+					getRandomQuote(message, database);
+				}
+				else if (args.length == 2){
+					var userID = args[1].slice(2, -1);
+					if(userID.startsWith("!")) userID = userID.slice(1);
+					var user = client.users.get(userID);
+					if(user == undefined || user.lastMessage == null){
+						message.channel.send("User/message not found!")
+							.then(msg => {
+								msg.delete(10000);
+							});
+						return;
+					}
+					var len = Object.keys(database[message.guild.id][userID]).length;
+					var quoteno = Math.floor(Math.random() * len);
+					let embed = new discord.RichEmbed()
+						.setAuthor(`${user.username} Hot Take #${quoteno + 1}`, user.avatarURL)
+						.setDescription(database[message.guild.id][userID][quoteno].quote)
+						.setTimestamp(database[message.guild.id][userID][quoteno].ts)
+						.setColor(`98FB98`);
+					message.channel.send(embed);
+					return;
+				}
+				else if (args.length == 3){
+					var userID = args[1].slice(2, -1);
+					if(userID.startsWith("!")) userID = userID.slice(1);
+					var user = client.users.get(userID);
+					if(user == undefined || user.lastMessage == null){
+						message.channel.send("User/message not found!")
+							.then(msg => {
+								msg.delete(10000);
+							});
+						return;
+					}
+					if(database[message.guild.id][userID][args[2] - 1]){
+						let embed = new discord.RichEmbed()
+							.setAuthor(`${user.username} Hot Take #${args[2]}`, user.avatarURL)
+							.setDescription(database[message.guild.id][userID][args[2] - 1].quote)
+							.setTimestamp(database[message.guild.id][userID][args[2] - 1].ts)
+							.setColor(`98FB98`);
+						message.channel.send(embed);
+					}
+					else{
+						message.channel.send("Quote not found!")
+							.then(msg => {
+								msg.delete(10000);
+							});
+					}
+					return;
+				}
 			}
 
 			else{
@@ -493,8 +543,25 @@ client.on("message", async message => {
 
 });
 
-function getRandomQuote(server, database){
-
+function getRandomQuote(message, database){
+	var len = Object.keys(database[message.guild.id]).length;
+	var userobj = Math.floor(Math.random() * len);
+	var i = 0;
+	for(var j in database[message.guild.id]){
+		if(i == userobj){
+			len = Object.keys(database[message.guild.id][j]).length;
+			var quoteno = Math.floor(Math.random() * len);
+			var user = client.users.get(j);
+			let embed = new discord.RichEmbed()
+				.setAuthor(`${user.username} Hot Take #${quoteno + 1}`, user.avatarURL)
+				.setDescription(database[message.guild.id][j][quoteno].quote)
+				.setTimestamp(database[message.guild.id][j][quoteno].ts)
+				.setColor(`98FB98`);
+			message.channel.send(embed);
+			return;
+		}
+	}
+	return;
 }
 
 //Start the bot with the given token
