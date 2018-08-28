@@ -71,6 +71,7 @@ client.on("message", async message => {
 					});
 				return;
 			}
+			var guildmember = message.guild.members.get(id);
 		}
 		let embed = new discord.RichEmbed()
 			.setAuthor("User Info", message.author.avatarURL)
@@ -78,7 +79,8 @@ client.on("message", async message => {
 			.setColor("98FB98")
 			.addField("Full Username", `${user.username}#${user.discriminator}`, true)
 			.addField("User ID", user.id, true)
-			.addField("Account Creation", user.createdAt)
+			.addField("Account Creation", user.createdAt, true)
+			.addField("Server Join", guildmember.joinedAt, true)
 			.setThumbnail(user.avatarURL)
 			.setTimestamp(Date.now());
 
@@ -385,7 +387,7 @@ client.on("message", async message => {
 		if(args.length == 0 || args[0] === 'help'){
 			let embed = new discord.RichEmbed()
 				.setAuthor("Hot Take Commands", client.user.avatarURL)
-				.setDescription(`All possible arguments for the ./hottake command`)
+				.setDescription(`All possible arguments for the ./hottake and ./ht command`)
 				.setColor("98FB98")
 				.addField("<user>", "tag a user to store their last message sent as a hot take")
 				.addField("help", "get this page")
@@ -592,6 +594,9 @@ function getRandomQuote(message, database){
 				.setColor(`98FB98`);
 			message.channel.send(embed);
 			return;
+		}
+		else{
+			i++;
 		}
 	}
 	return;
