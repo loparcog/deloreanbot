@@ -71,7 +71,7 @@ client.on("message", async message => {
 					});
 				return;
 			}
-			var guildmember = message.guild.members.get(id);
+			var guildmember = message.guild.members.get(userID);
 		}
 		let embed = new discord.RichEmbed()
 			.setAuthor("User Info", message.author.avatarURL)
@@ -285,7 +285,7 @@ client.on("message", async message => {
 		//Personal, use to track changes
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.10 (ht, remove submit)");
+			message.channel.send("V 1.11 (new user search)");
 		}
 		return;
 	}
