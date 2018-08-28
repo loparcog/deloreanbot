@@ -504,6 +504,13 @@ client.on("message", async message => {
 						});
 					return;
 				}
+				else if (user.bot){
+					message.channel.send("Can't quote a bot!")
+						.then(msg => {
+							msg.delete(10000);
+						});
+					return;
+				}
 				jsonchange++;
 				var lastmsg = user.lastMessage.content;
 				var timestamp = new Date().toString();
