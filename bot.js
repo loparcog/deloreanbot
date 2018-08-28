@@ -30,7 +30,7 @@ client.on("ready", async () => {
 	//WEEKLY CHANGE
 	//"Listing to" status for the bot
 	client.user.setPresence({
-		game: {name: "Week 8 | ./help", 
+		game: {name: "Week 9 | ./help", 
 			type: 'LISTENING' },
 		status: 'online'
 	});
@@ -133,7 +133,7 @@ client.on("message", async message => {
 					collector.on("collect", message => {
 						messages[1] = message;
 						//WEEKLY CHANGE
-						if (parseInt(message.content) > 0 && parseInt(message.content) < 9){
+						if (parseInt(message.content) > 0 && parseInt(message.content) < 10){
 							weekno = parseInt(message.content);
 								var weekalbums = "";
 							if(weekno < 4){
@@ -164,15 +164,15 @@ client.on("message", async message => {
 						}
 					});
 					collector.on("end", () => {
-						for(var i = 0; i < 2; i++){
-							messages[i].delete();
-						}
-						return;
+							for(var i = 0; i < 2; i++){
+								messages[i].delete();
+							}
+							return;
 					});
 				}
 				else{
 					//WEEKLY CHANGE
-					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 9){
+					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 10){
 						weekno = parseInt(args[0]);
 						var weekalbums = "";
 						if(weekno < 4){
@@ -257,7 +257,7 @@ client.on("message", async message => {
 			})
 			.on("end", function(){
 				//WEEKLY CHANGE
-				weekno = 8;
+				weekno = 9;
 				for(var i = 0; i < 5; i++){
 					weekalbums += `${i + 1}. ${database[2 + i + ((weekno - 1) * 5)][0]} \n`;
 				}
@@ -279,7 +279,7 @@ client.on("message", async message => {
 		//Personal, use to track changes
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.07 (hottake get finished)");
+			message.channel.send("V 1.08 (hottake fix, w9)");
 		}
 		return;
 	}
@@ -290,7 +290,7 @@ client.on("message", async message => {
 			.setAuthor("Bot Commands", client.user.avatarURL)
 			.setDescription(`Use the prefix ./ before all commands, all <arguments> are optional`)
 			.setColor("98FB98")
-			.addField("hottake", "store a quote of a given user, more information with ./hottake help")
+			.addField("hottake", "store the last message of a given user, more information with ./hottake help")
 			.addField("weekly <week#>", "get past weekly playlists and their playback links")
 			.addField("thisweek", "get this weeks playlist and its playback link")
 			.addField("submit", "get the link to submit a song to the weekly playlist")
@@ -331,6 +331,11 @@ client.on("message", async message => {
 		else{
 			client.users.get(`196388136656437250`).send(message.content.slice(12) + "\n" + 
 				`${message.author.username}#${message.author.discriminator}, from ${message.guild.name}`);	
+			message.delete(10000);
+			message.channel.send("Suggestion sent!")
+				.then(msg => {
+					msg.delete(10000);
+				});
 		}
 		return;
 	}
@@ -371,13 +376,13 @@ client.on("message", async message => {
 		return;
 	}
 
-	if(command === `${prefix}hottake`){
+	if(command === `${prefix}htt`){
 		if(args.length == 0 || args[0] === 'help'){
 			let embed = new discord.RichEmbed()
-				.setAuthor("Hot Take Help", client.user.avatarURL)
+				.setAuthor("Hot Take Commands", client.user.avatarURL)
 				.setDescription(`All possible arguments for the ./hottake command`)
 				.setColor("98FB98")
-				.addField("<user>", "tag a user to store their hot take")
+				.addField("<user>", "tag a user to store their last message sent as a hot take")
 				.addField("help", "get this page")
 				.addField("total <user>", "get the total hot takes for the server or for a given user")
 				.addField("get <user> <index>", "get a specific hot take, or random if no arguments are given")
@@ -496,25 +501,25 @@ client.on("message", async message => {
 						});
 					return;
 				}
-				var q = user.lastMessage;
-				var timestamp = new Date().toString()
+				var lastmsg = user.lastMessage.content;
+				var timestamp = new Date().toString();
+				var i = 0;
 				if(database[message.guild.id]){
 					if(database[message.guild.id][userID]){
-						var i = 0;
 						var userjs = database[message.guild.id][userID]
 						while(userjs[i]){
 							i++;
 						}
 						database[message.guild.id][userID][i] = {
-							quote: q,
-							ts: timestamp
+							'quote': lastmsg,
+							'ts': timestamp
 						}
 					}
 					else{
 						database[message.guild.id][userID] = {
-							0 : {
-								quote : q,
-								ts : timestamp
+							'0' : {
+								'quote' : lastmsg,
+								'ts' : timestamp
 							}
 						}
 					}
@@ -522,9 +527,9 @@ client.on("message", async message => {
 				else{
 					database[message.guild.id] = {
 						userID : {
-							0 : {
-								quote : q,
-								ts : timestamp
+							'0' : {
+								'quote' : lastmsg,
+								'ts' : timestamp
 							}
 						}
 					}
