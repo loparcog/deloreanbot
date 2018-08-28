@@ -24,6 +24,8 @@ const weather = require("weather-js");
 const client = new discord.Client();
 const prefix = botSettings.prefix;
 
+var jsonchange = 0;
+
 
 client.on("ready", async () => {
 	console.log("Delorean ONLINE");
@@ -372,6 +374,7 @@ client.on("message", async message => {
 		//Personal, get current live json
 		if(message.author.id == `196388136656437250`){
 			message.channel.send(new discord.Attachment('./hottake.json', 'hottake.json'));
+			message.channel.send(`${jsonchange} addition(s)`);
 		}
 		return;
 	}
@@ -501,6 +504,7 @@ client.on("message", async message => {
 						});
 					return;
 				}
+				jsonchange++;
 				var lastmsg = user.lastMessage.content;
 				var timestamp = new Date().toString();
 				var i = 0;
