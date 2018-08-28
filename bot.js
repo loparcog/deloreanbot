@@ -55,13 +55,15 @@ client.on("message", async message => {
 
 	// BOT COMMANDS
 
+
+	//add server join date
 	if(command === `${prefix}userinfo`){
 		//give user information about their account
 		var user = message.author;
 		if(args.length != 0){
 			var userID = args[0].slice(2, -1);
 			if(userID.startsWith("!")) userID = userID.slice(1);
-			user = client.users.get(userID);
+			user = getUser(userID, message);
 			if(user == undefined){
 				message.channel.send("User not found!")
 					.then(msg => {
@@ -206,7 +208,7 @@ client.on("message", async message => {
 		});
 	}
 
-	//make option to change degrees
+	//make option to change degrees or display both
 	if(command === `${prefix}weather`){
 		//give the weather of a set city
 		if(args.length == 0){
@@ -235,8 +237,8 @@ client.on("message", async message => {
 				.setThumbnail(current.imageUrl)
 				.setColor("98FB98")
 				.addField('Timezone', `UTC ${location.timezone}`, true)
-				.addField('Degree Type', `˚C`, true)
-				.addField('Temperature', `${current.temperature}˚C`, true)
+				.addField('Temperature (F)', `${(current.temperature * 1.8) + 32} F`, true)
+				.addField('Temperature (˚C)', `${current.temperature}˚C`, true)
 				.addField('Feels Like', `${current.feelslike}˚C`, true)
 				.addField('Winds', current.winddisplay, true)
 				.addField('Humidity', `${current.humidity}%`, true)
@@ -270,18 +272,18 @@ client.on("message", async message => {
 	}
 
 	//may take out for public?
-	if(command === `${prefix}submit`){
+	/*if(command === `${prefix}submit`){
 		//give the link to submit album suggestions for the next weekly playlist
 		message.channel.send("Submt your albums for the weekly playlist @ https://goo.gl/forms/otK2Uq3kNVE2Yk0x2" +
 			"\nMcMaster student submissions only!");
 		return;
-	}
+	}*/
 
 	if(command === `${prefix}code`){
 		//Personal, use to track changes
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.08 (hottake fix, w9)");
+			message.channel.send("V 1.10 (ht, remove submit)");
 		}
 		return;
 	}
@@ -292,12 +294,12 @@ client.on("message", async message => {
 			.setAuthor("Bot Commands", client.user.avatarURL)
 			.setDescription(`Use the prefix ./ before all commands, all <arguments> are optional`)
 			.setColor("98FB98")
-			.addField("hottake", "store the last message of a given user, more information with ./hottake help")
+			.addField("hottake", "store the last message of a given user, more information with ./hottake help. Can also be used with ./ht")
 			.addField("weekly <week#>", "get past weekly playlists and their playback links")
 			.addField("thisweek", "get this weeks playlist and its playback link")
-			.addField("submit", "get the link to submit a song to the weekly playlist")
+			//.addField("submit", "get the link to submit a song to the weekly playlist")
 			.addField("weather <city>", "get the weather at a given location")
-			.addField("suggestion <msg>", "suggest a function for the bot")
+			.addField("suggest <msg>", "suggest a function for the bot")
 			.addField("ping", "check bot ping")
 			.addField("userinfo <user>", "get information on given user" )
 			.addField("serverinfo", "get information about the server")
@@ -308,7 +310,7 @@ client.on("message", async message => {
 		return;
 	}
 
-	if(command === `${prefix}suggestion`){
+	if(command === `${prefix}suggest`){
 		//Send a message to myself with a suggestion from the user (Gives username and server the suggestion was from)
 		if(args.length == 0){
 			message.channel.send("What would you like to suggest?")
@@ -348,7 +350,7 @@ client.on("message", async message => {
 			"updated weekly. Its main functions are to give users weekly playlists as well as store people's quotes" +
 			" and hot takes to be used to call out someone at a later time. " + 
 			"For more information on the code or bot functionality, please contact myself through " +
-			"./suggestion or directly through DMs.");
+			"./suggest or directly through DMs.");
 		return;
 	}
 
@@ -379,7 +381,7 @@ client.on("message", async message => {
 		return;
 	}
 
-	if(command === `${prefix}hottake`){
+	if((command === `${prefix}hottake`) || (command === `${prefix}ht`)){
 		if(args.length == 0 || args[0] === 'help'){
 			let embed = new discord.RichEmbed()
 				.setAuthor("Hot Take Commands", client.user.avatarURL)
@@ -418,7 +420,7 @@ client.on("message", async message => {
 				else{
 					var userID = args[1].slice(2, -1);
 					if(userID.startsWith("!")) userID = userID.slice(1);
-					user = client.users.get(userID);
+					user = getUser(userID, message);
 					if(user == undefined || !database[message.guild.id][userID]){
 						message.channel.send("User has not hot takes or was not found")
 							.then(msg => {
@@ -432,14 +434,22 @@ client.on("message", async message => {
 				}
 			}
 
+			//needs more error detection
 			else if(args[0] === 'get'){
+				if(inbase = false){
+					message.channel.send("Server not found!")
+						.then(msg => {
+							msg.delete(10000);
+						});
+					return;
+				}
 				if (args.length == 1){
 					getRandomQuote(message, database);
 				}
 				else if (args.length == 2){
 					var userID = args[1].slice(2, -1);
 					if(userID.startsWith("!")) userID = userID.slice(1);
-					var user = client.users.get(userID);
+					var user = getUser(userID, message);
 					if(user == undefined || user.lastMessage == null){
 						message.channel.send("User/message not found!")
 							.then(msg => {
@@ -460,7 +470,7 @@ client.on("message", async message => {
 				else if (args.length == 3){
 					var userID = args[1].slice(2, -1);
 					if(userID.startsWith("!")) userID = userID.slice(1);
-					var user = client.users.get(userID);
+					var user = getUser(userID, message);
 					if(user == undefined || user.lastMessage == null){
 						message.channel.send("User/message not found!")
 							.then(msg => {
@@ -489,7 +499,7 @@ client.on("message", async message => {
 			else{
 				var userID = args[0].slice(2, -1);
 				if(userID.startsWith("!")) userID = userID.slice(1);
-				var user = client.users.get(userID);
+				var user = getUser(userID, message);
 				if(user == undefined || user.lastMessage == null){
 					message.channel.send("User/message not found!")
 						.then(msg => {
@@ -536,12 +546,11 @@ client.on("message", async message => {
 					}
 				}
 				else{
-					database[message.guild.id] = {
-						userID : {
-							'0' : {
-								'quote' : lastmsg,
-								'ts' : timestamp
-							}
+					database[message.guild.id] = {}
+					database[message.guild.id][userID] = {
+						'0' : {
+							'quote' : lastmsg,
+							'ts' : timestamp
 						}
 					}
 				}
@@ -556,8 +565,16 @@ client.on("message", async message => {
 		}
 	return;
 	}
-
 });
+
+function getUser(id, message){
+	if(message.guild.members.get(id) == undefined){
+		return undefined;
+	}
+	else{
+		return message.guild.members.get(id).user;
+	}
+}
 
 function getRandomQuote(message, database){
 	var len = Object.keys(database[message.guild.id]).length;
@@ -567,7 +584,7 @@ function getRandomQuote(message, database){
 		if(i == userobj){
 			len = Object.keys(database[message.guild.id][j]).length;
 			var quoteno = Math.floor(Math.random() * len);
-			var user = client.users.get(j);
+			var user = message.guild.members.get(j).user;
 			let embed = new discord.RichEmbed()
 				.setAuthor(`${user.username} Hot Take #${quoteno + 1}`, user.avatarURL)
 				.setDescription(database[message.guild.id][j][quoteno].quote)
