@@ -71,7 +71,6 @@ client.on("message", async message => {
 					});
 				return;
 			}
-			var guildmember = message.guild.members.get(userID);
 		}
 		let embed = new discord.RichEmbed()
 			.setAuthor("User Info", message.author.avatarURL)
@@ -79,8 +78,7 @@ client.on("message", async message => {
 			.setColor("98FB98")
 			.addField("Full Username", `${user.username}#${user.discriminator}`, true)
 			.addField("User ID", user.id, true)
-			.addField("Account Creation", user.createdAt, true)
-			.addField("Server Join", guildmember.joinedAt, true)
+			.addField("Account Creation", user.createdAt)
 			.setThumbnail(user.avatarURL)
 			.setTimestamp(Date.now());
 
