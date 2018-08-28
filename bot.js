@@ -72,13 +72,15 @@ client.on("message", async message => {
 				return;
 			}
 		}
+		var joinedAt = message.guild.members.get(user.id).joinedAt
 		let embed = new discord.RichEmbed()
 			.setAuthor("User Info", message.author.avatarURL)
 			.setDescription(`Requested by ${message.author.username}`)
 			.setColor("98FB98")
 			.addField("Full Username", `${user.username}#${user.discriminator}`, true)
 			.addField("User ID", user.id, true)
-			.addField("Account Creation", user.createdAt)
+			.addField("Account Created", user.createdAt)
+			.addField("Joined Server", joinedAt)
 			.setThumbnail(user.avatarURL)
 			.setTimestamp(Date.now());
 
