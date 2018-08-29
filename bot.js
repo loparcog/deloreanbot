@@ -270,19 +270,11 @@ client.on("message", async message => {
 		return;
 	}
 
-	//may take out for public?
-	/*if(command === `${prefix}submit`){
-		//give the link to submit album suggestions for the next weekly playlist
-		message.channel.send("Submt your albums for the weekly playlist @ https://goo.gl/forms/otK2Uq3kNVE2Yk0x2" +
-			"\nMcMaster student submissions only!");
-		return;
-	}*/
-
 	if(command === `${prefix}code`){
 		//Personal, use to track changes
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.12 (round, attempt fix for get)");
+			message.channel.send("V 1.13 (weekly to JSON)");
 		}
 		return;
 	}
@@ -296,7 +288,6 @@ client.on("message", async message => {
 			.addField("hottake", "store the last message of a given user, more information with ./hottake help. Can also be used with ./ht")
 			.addField("weekly <week#>", "get past weekly playlists and their playback links")
 			.addField("thisweek", "get this weeks playlist and its playback link")
-			//.addField("submit", "get the link to submit a song to the weekly playlist")
 			.addField("weather <city>", "get the weather at a given location")
 			.addField("suggest <msg>", "suggest a function for the bot")
 			.addField("ping", "check bot ping")
