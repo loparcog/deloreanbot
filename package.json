@@ -4,7 +4,7 @@
   "description": "Discord bot",
   "main": "bot.js",
   "scripts": {
-  	"start": "node bot.js",
+    "start": "node bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,7 +19,6 @@
   "homepage": "https://github.com/loparcog/delorianbot#readme",
   "dependencies": {
     "discord.js": "^11.4.2",
-    "fast-csv": "^2.4.1",
     "weather-js": "^2.0.0"
   }
 }
