@@ -5,12 +5,13 @@
 //make a botsettings.json and use that, with a token and prefix object. When using a server, use the runtime variables,
 //in this case, these are set within heroku, to help hide the bot key
 
-const botSettings = require("./botsettings.json");
+//const botSettings = require("./botsettings.json");
 
-/*const botSettings = {
+const botSettings = {
 	token: process.env.token,
 	prefix: process.env.prefix
-}*/
+}
+
 //Imports for npm modules
 const discord = require("discord.js");
 
