@@ -118,8 +118,6 @@ client.on("message", async message => {
 	}
 
 	if(command === `${prefix}weekly`){
-			var rawdata = fs.readFileSync('albumdb.json');
-			var albumdb = JSON.parse(rawdata);
 			if(args.length == 0){
 					var messages = {}
 					message.channel.send("Which week's playlist would you like to view?")
@@ -132,23 +130,7 @@ client.on("message", async message => {
 						//WEEKLY CHANGE
 					if (parseInt(message) > 0 && parseInt(message) < 10){
 						var weekno = parseInt(message);
-						var weekdata = albumdb[weekno];
-												let embed = new discord.RichEmbed()
-							.setAuthor(`MOOD Week ${weekno}`, client.user.avatarURL)
-							.setColor(`98FB98`);
-						if(weekdata.img != ""){
-							embed.setThumbnail(weekdata.img);
-						}
-						var albums = weekdata.albums.split(" π ");
-						var set = []
-						for(var i = 0; i < albums.length; i++){
-							set = albums[i].split(" - ");
-							embed.addField(set[0],set[1]);
-						}
-						embed.addBlankField()
-							.addField("Playback Resources", weekdata.links)
-							.setDescription(`*${weekdata.date}*`)
-							.setFooter(`McMaster MOOD Club 2018`)
+						var embed = getAlbumEmbed(weekno);
 						message.channel.send(embed);
 						collector.stop();
 					}
@@ -171,23 +153,7 @@ client.on("message", async message => {
 					//WEEKLY CHANGE
 					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 10){
 						var weekno = parseInt(args[0]);
-						var weekdata = albumdb[weekno];
-						let embed = new discord.RichEmbed()
-							.setAuthor(`MOOD Week ${weekno}`, client.user.avatarURL)
-							.setColor(`98FB98`);
-						if(weekdata.img != ""){
-							embed.setThumbnail(weekdata.img);
-						}
-						var albums = weekdata.albums.split(" π ");
-						var set = []
-						for(var i = 0; i < albums.length; i++){
-							set = albums[i].split(" - ");
-							embed.addField(set[0],set[1]);
-						}
-						embed.addBlankField()
-							.addField("Playback Resources", weekdata.links)
-							.setDescription(`*${weekdata.date}*`)
-							.setFooter(`McMaster MOOD Club 2018`)
+						var embed = getAlbumEmbed(weekno);
 						message.channel.send(embed);
 					}
 					else{
@@ -200,7 +166,13 @@ client.on("message", async message => {
 				}
 	}
 
-	//make option to change degrees or display both
+	if(command === `${prefix}thisweek`){
+		//Give the current week playlist
+		var embed = getAlbumEmbed(9)
+		message.channel.send(embed);
+	}
+
+
 	if(command === `${prefix}weather`){
 		//give the weather of a set city
 		if(args.length == 0){
@@ -236,40 +208,6 @@ client.on("message", async message => {
 			message.channel.send(embed);
 			return;
 		});
-	}
-
-	if(command === `${prefix}thisweek`){
-		//Give the current week playlist
-		var rawdata = fs.readFileSync('albumdb.json');
-		var albumdb = JSON.parse(rawdata);
-		var weekno = 9;
-		var weekdata = albumdb[weekno];
-		let embed = new discord.RichEmbed()
-			.setAuthor(`MOOD Week ${weekno}`, client.user.avatarURL)
-			.setColor(`98FB98`);
-		if(weekdata.img != ""){
-			embed.setThumbnail(weekdata.img);
-		}
-		var albums = weekdata.albums.split(" π ");
-		var set = []
-		for(var i = 0; i < albums.length; i++){
-			set = albums[i].split(" - ");
-			embed.addField(set[0],set[1]);
-		}
-		embed.addBlankField()
-			.addField("Playback Resources", weekdata.links)
-			.setDescription(`*${weekdata.date}*`)
-			.setFooter(`McMaster MOOD Club 2018`)
-		message.channel.send(embed);
-	}
-
-	if(command === `${prefix}code`){
-		//Personal, use to track changes
-		if(message.author.id == `196388136656437250`){
-			//CHANGE PER UPDATE
-			message.channel.send("V 1.14 (full JSON)");
-		}
-		return;
 	}
 
 	if(command === `${prefix}help`){
@@ -334,6 +272,15 @@ client.on("message", async message => {
 			" and hot takes to be used to call out someone at a later time. " + 
 			"For more information on the code or bot functionality, please contact myself through " +
 			"./suggest or directly through DMs.");
+		return;
+	}
+
+	if(command === `${prefix}code`){
+		//Personal, use to track changes
+		if(message.author.id == `196388136656437250`){
+			//CHANGE PER UPDATE
+			message.channel.send("V 1.15 (album fix)");
+		}
 		return;
 	}
 
@@ -548,89 +495,6 @@ client.on("message", async message => {
 		}
 	return;
 	}
-
-	if(command === `${prefix}test`){
-			var rawdata = fs.readFileSync('albumdb.json');
-			var albumdb = JSON.parse(rawdata);
-			if(args.length == 0){
-					var messages = {}
-					message.channel.send("Which week's playlist would you like to view?")
-						.then(msg => {
-							messages[0] = msg;
-						});
-					const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
-					collector.on("collect", message => {
-						messages[1] = message;
-						//WEEKLY CHANGE
-					if (parseInt(message) > 0 && parseInt(message) < 10){
-						var weekno = parseInt(message);
-						var weekdata = albumdb[weekno];
-												let embed = new discord.RichEmbed()
-							.setAuthor(`MOOD Week ${weekno}`, client.user.avatarURL)
-							.setColor(`98FB98`);
-						if(weekdata.img != ""){
-							embed.setThumbnail(weekdata.img);
-						}
-						var albums = weekdata.albums.split(" π ");
-						var set = []
-						for(var i = 0; i < albums.length; i++){
-							set = albums[i].split(" - ");
-							embed.addField(set[0],set[1]);
-						}
-						embed.addBlankField()
-							.addField("Playback Resources", weekdata.links)
-							.setDescription(`*${weekdata.date}*`)
-							.setFooter(`McMaster MOOD Club 2018`)
-						message.channel.send(embed);
-						collector.stop();
-					}
-					else{
-						message.channel.send("Week not identified!")
-							.then(msg => {
-								msg.delete(10000);
-							});
-						collector.stop();
-					}
-					});
-					collector.on("end", () => {
-						for(var i = 0; i < 2; i++){
-							messages[i].delete();
-						}
-						return;
-					});
-				}
-				else{
-					//WEEKLY CHANGE
-					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 10){
-						var weekno = parseInt(args[0]);
-						var weekdata = albumdb[weekno];
-						let embed = new discord.RichEmbed()
-							.setAuthor(`MOOD Week ${weekno}`, client.user.avatarURL)
-							.setColor(`98FB98`);
-						if(weekdata.img != ""){
-							embed.setThumbnail(weekdata.img);
-						}
-						var albums = weekdata.albums.split(" π ");
-						var set = []
-						for(var i = 0; i < albums.length; i++){
-							set = albums[i].split(" - ");
-							embed.addField(set[0],set[1]);
-						}
-						embed.addBlankField()
-							.addField("Playback Resources", weekdata.links)
-							.setDescription(`*${weekdata.date}*`)
-							.setFooter(`McMaster MOOD Club 2018`)
-						message.channel.send(embed);
-					}
-					else{
-						message.channel.send("Week not identified!")
-							.then(msg => {
-								msg.delete(10000);
-							});
-						return;
-					}
-				}
-	}
 });
 
 function getUser(id, message){
@@ -664,6 +528,30 @@ function getRandomQuote(message, database){
 		}
 	}
 	return;
+}
+
+function getAlbumEmbed(index){
+	var rawdata = fs.readFileSync('albumdb.json');
+	var albumdb = JSON.parse(rawdata);
+	var weekno = index;
+	var weekdata = albumdb[weekno];
+	let embed = new discord.RichEmbed()
+		.setAuthor(`MOOD Week ${weekno}`, client.user.avatarURL)
+		.setColor(`98FB98`);
+	if(weekdata.img != ""){
+		embed.setThumbnail(weekdata.img);
+	}
+	var albums = weekdata.albums.split(" π ");
+	var set = []
+	for(var i = 0; i < albums.length; i++){
+		set = albums[i].split(" - ");
+		embed.addField(set[0],set[1]);
+	}
+	embed.addBlankField()
+		.addField("Playback Resources", weekdata.links)
+		.setDescription(`*${weekdata.date}*`)
+		.setFooter(`McMaster MOOD Club 2018`)
+	return(embed);
 }
 
 //Start the bot with the given token
