@@ -20,3 +20,7 @@ process as a command. The procfile and environment variables found in the code a
 needed for hosting on heroku, in which everything stored in the botsettings.json file are
 kept as local variables, to make them less accessable to the public and make sure that
 my bot token is safe while still being able to share this code.
+
+# Note
+All code was created by myself, except npm-made (package.json, package-lock.json) and any
+npm modules used in this project.
