@@ -31,7 +31,7 @@ client.on("ready", async () => {
 	//WEEKLY CHANGE
 	//"Listing to" status for the bot
 	client.user.setPresence({
-		game: {name: "Week 9 | ./help", 
+		game: {name: "Week 10 | ./help", 
 			type: 'LISTENING' },
 		status: 'online'
 	});
@@ -119,6 +119,7 @@ client.on("message", async message => {
 
 	if(command === `${prefix}weekly`){
 			if(args.length == 0){
+				//look for unhandled promise
 					var messages = {}
 					message.channel.send("Which week's playlist would you like to view?")
 						.then(msg => {
@@ -128,7 +129,7 @@ client.on("message", async message => {
 					collector.on("collect", message => {
 						messages[1] = message;
 						//WEEKLY CHANGE
-					if (parseInt(message) > 0 && parseInt(message) < 10){
+					if (parseInt(message) > 0 && parseInt(message) < 11){
 						var weekno = parseInt(message);
 						var embed = getAlbumEmbed(weekno);
 						message.channel.send(embed);
@@ -151,7 +152,7 @@ client.on("message", async message => {
 				}
 				else{
 					//WEEKLY CHANGE
-					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 10){
+					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 11){
 						var weekno = parseInt(args[0]);
 						var embed = getAlbumEmbed(weekno);
 						message.channel.send(embed);
@@ -168,8 +169,18 @@ client.on("message", async message => {
 
 	if(command === `${prefix}thisweek`){
 		//Give the current week playlist
-		var embed = getAlbumEmbed(9)
+		//WEEKLY CHANGE
+		var embed = getAlbumEmbed(10)
 		message.channel.send(embed);
+		return;
+	}
+
+	if(command === `${prefix}random` || command === `${prefix}r`){
+		var rawdata = fs.readFileSync('randsong.json');
+		var database = JSON.parse(rawdata);
+		var len = Object.keys(database).length;
+		message.channel.send(database[Math.floor(Math.random()*len)]);
+		return;
 	}
 
 
@@ -219,8 +230,9 @@ client.on("message", async message => {
 			.addField("hottake", "store the last message of a given user, more information with ./hottake help. Can also be used with ./ht")
 			.addField("weekly <week#>", "get past weekly playlists and their playback links")
 			.addField("thisweek", "get this weeks playlist and its playback link")
+			.addField("random", "give the user a random song")
 			.addField("weather <city>", "get the weather at a given location")
-			.addField("suggest <msg>", "suggest a function for the bot")
+			.addField("suggest <msg>", "suggest a function for the bot/random song")
 			.addField("ping", "check bot ping")
 			.addField("userinfo <user>", "get information on given user" )
 			.addField("serverinfo", "get information about the server")
@@ -279,7 +291,7 @@ client.on("message", async message => {
 		//Personal, use to track changes
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.15 (album fix)");
+			message.channel.send("V 1.16 (random fxn start)");
 		}
 		return;
 	}
