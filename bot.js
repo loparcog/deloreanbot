@@ -19,11 +19,14 @@ const fs = require("fs");
 
 const weather = require("weather-js");
 
+const ytval = require("youtube-validate");
+
 //initializer for the bot
 const client = new discord.Client();
 const prefix = botSettings.prefix;
 
 var jsonchange = 0;
+var randchange = 0;
 
 
 client.on("ready", async () => {
@@ -175,7 +178,7 @@ client.on("message", async message => {
 		return;
 	}
 
-	if(command === `${prefix}random` || command === `${prefix}r`){
+	if(command === `${prefix}rand` || command === `${prefix}r`){
 		var rawdata = fs.readFileSync('randsong.json');
 		var database = JSON.parse(rawdata);
 		var len = Object.keys(database).length;
@@ -183,6 +186,36 @@ client.on("message", async message => {
 		return;
 	}
 
+	if(command === `${prefix}addrand`){
+		var rawdata = fs.readFileSync('randsong.json');
+		var database = JSON.parse(rawdata);
+		var len = Object.keys(database).length;
+		if(args.length != 0){
+			ytval.validateUrl(args[0])
+				.then(res => {
+						database[len] = `${args[0]} \nAdded by ${message.author.username}#${message.author.discriminator}`;
+						let datafinal = JSON.stringify(database);
+						fs.writeFileSync('randsong.json', datafinal);
+						randchange++;
+						console.log(`New rand song stored, change #${randchange}`);
+						message.channel.send("Song added!");
+						return;
+				})
+				.catch(er => {
+					message.channel.send("URL not valid!")
+						.then(msg => {
+							msg.delete(10000);
+						});
+				});
+		}
+		else{
+			message.channel.send("Use ./addrand <songlink> to input a song!")
+				.then(msg => {
+					msg.delete(10000);
+				});
+		}
+		return;
+	}
 
 	if(command === `${prefix}weather`){
 		//give the weather of a set city
@@ -230,7 +263,8 @@ client.on("message", async message => {
 			.addField("hottake", "store the last message of a given user, more information with ./hottake help. Can also be used with ./ht")
 			.addField("weekly <week#>", "get past weekly playlists and their playback links")
 			.addField("thisweek", "get this weeks playlist and its playback link")
-			.addField("random", "give the user a random song")
+			.addField("rand", "give the user a random song")
+			.addField("addrand <songlink>", "add a random song to the ./rand database (youtube links only)")
 			.addField("weather <city>", "get the weather at a given location")
 			.addField("suggest <msg>", "suggest a function for the bot/random song")
 			.addField("ping", "check bot ping")
@@ -318,7 +352,9 @@ client.on("message", async message => {
 		//Personal, get current live json
 		if(message.author.id == `196388136656437250`){
 			message.channel.send(new discord.Attachment('./hottake.json', 'hottake.json'));
-			message.channel.send(`${jsonchange} addition(s)`);
+			message.channel.send(new discord.Attachment('./randsong.json', 'randsong.json'));
+			message.channel.send(`${jsonchange} addition(s) for ht`);
+			message.channel.send(`${randchange} addition(s) for rs`);
 		}
 		return;
 	}
@@ -499,13 +535,22 @@ client.on("message", async message => {
 
 				let datafinal = JSON.stringify(database);
 				fs.writeFileSync('hottake.json', datafinal);
+				console.log(`New hot take stored, change #${jsonchange}`);
 				message.channel.send("Hot take stored!")
-					.then(msg => {
-						msg.delete(10000);
-					});
 			}
 		}
 	return;
+	}
+
+	if(command === `${prefix}test`){
+		ytval.validateUrl(args[0])
+			.then(res => {
+				message.channel.send("Success!");
+			})
+			.catch(er => {
+				message.channel.send("Invalid URL");
+			});
+		return;
 	}
 });
 
