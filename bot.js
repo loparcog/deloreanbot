@@ -1,5 +1,5 @@
 //DeLorean Discord Bot
-//Giacomo Loparco | Last Edited 08/09/18
+//Giacomo Loparco | Last Edited 09/09/18
 
 //botSettings is used for the bot prefix and for the bot key/token, used to identify the bot. When using it on a local machine,
 //make a botsettings.json and use that, with a token and prefix object. When using a server, use the runtime variables,
@@ -326,7 +326,8 @@ client.on("message", async message => {
 		//Personal, use to track changes
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.20 (M U S I C)");
+			message.channel.send("V 1.21 (M U S I C & buildpack) || https://github.com/loparcog/deloreanbot");
+
 		}
 		return;
 	}
