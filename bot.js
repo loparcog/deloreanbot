@@ -1,25 +1,23 @@
 //DeLorean Discord Bot
-//Giacomo Loparco | Last Edited 29/08/18
+//Giacomo Loparco | Last Edited 08/09/18
 
 //botSettings is used for the bot prefix and for the bot key/token, used to identify the bot. When using it on a local machine,
 //make a botsettings.json and use that, with a token and prefix object. When using a server, use the runtime variables,
 //in this case, these are set within heroku, to help hide the bot key
 
-//const botSettings = require("./botsettings.json");
+const botSettings = require("./botsettings.json");
 
-const botSettings = {
+/*const botSettings = {
 	token: process.env.token,
 	prefix: process.env.prefix
-}
+}*/
 
 //Imports for npm modules
 const discord = require("discord.js");
-
 const fs = require("fs");
-
 const weather = require("weather-js");
-
 const ytval = require("youtube-validate");
+const ytdl = require("ytdl-core");
 
 //initializer for the bot
 const client = new discord.Client();
@@ -27,6 +25,9 @@ const prefix = botSettings.prefix;
 
 var jsonchange = 0;
 var randchange = 0;
+var queue = {};
+var streams = {};
+var dispatchers = {};
 
 
 client.on("ready", async () => {
@@ -325,7 +326,7 @@ client.on("message", async message => {
 		//Personal, use to track changes
 		if(message.author.id == `196388136656437250`){
 			//CHANGE PER UPDATE
-			message.channel.send("V 1.16 (random fxn start)");
+			message.channel.send("V 1.20 (M U S I C)");
 		}
 		return;
 	}
@@ -542,17 +543,121 @@ client.on("message", async message => {
 	return;
 	}
 
-	if(command === `${prefix}test`){
-		ytval.validateUrl(args[0])
-			.then(res => {
-				message.channel.send("Success!");
-			})
-			.catch(er => {
-				message.channel.send("Invalid URL");
-			});
-		return;
+	if((command === `${prefix}play`) || (command === `${prefix}p`)){
+		var vc = message.member.voiceChannel;
+		var id = message.guild.id;
+		//add volume?
+
+		if(args.length == 0 || args[0] === 'help'){
+			let embed = new discord.RichEmbed()
+				.setAuthor("Play Commands", client.user.avatarURL)
+				.setDescription(`All possible arguments for the ./play and ./p command`)
+				.setColor("98FB98")
+				.addField("<songlink>", "send a youtube link to play it in your voice channel, or add to your queue if a song is already playing")
+				.addField("help", "get this page")
+				.addField("queue", "get the current song queue")
+				.addField("skip", "skip the current song")
+				.addField("exit", "get the bot to leave your current voice channel")
+				.setFooter("PB&Jams");
+			message.channel.send(embed);
+			return;
+		}
+		/*if(args[0] == "queue" || args[0] == "q"){
+			if(queue[id]){
+				let embed = new discord.RichEmbed()
+				.setAuthor("Song Queue", client.user.avatarURL)
+				.setColor("98FB98");
+				ytdl.getBasicInfo(queue[id][0])
+					.then(info => {
+						embed.addField(`Now Playing: ${info.title}`, `${Math.floor(info.length_seconds/60)}m ${info.length_seconds%60}s`);
+					})
+				for(var i = 1; i < queue[id].length; i++){
+					ytdl.getBasicInfo(queue[id][i])
+						.then(info => {
+							embed.setField(info.title, `${Math.floor(info.length_seconds/60)}m ${info.length_seconds%60}s`);
+						});
+				}
+				message.channel.send(embed);
+				return;
+			}
+			message.channel.send("No songs in queue!")
+				.then(msg => {
+					msg.delete(10000);
+				});
+		}*/
+		if(args[0] == "exit"){
+			if(vc == undefined || !dispatchers[id]){
+				message.channel.send("Cannot find voice channel!")
+					.then(msg => {
+						msg.delete(10000);
+					});
+				return;
+			}
+			vc.leave();
+			queue[id] = [];
+			dispatchers[id].end();
+			delete streams[id];
+			delete dispatchers[id];
+			message.channel.send("Exit successful!");
+			return;
+		}
+		if(args[0] == "skip"){
+			if(!dispatchers[id]){
+				message.channel.send("No song to skip!")
+					.then(msg => {
+						msg.delete(10000);
+					});
+				return;
+			}
+			dispatchers[id].end();
+			message.channel.send("Song skipped!");
+			return;
+		}
+		if(ytdl.validateURL(args[0])){
+			if(queue[vc.guild.id] != null){
+				queue[vc.guild.id].push(args[0]);
+				message.channel.send("Song added to queue!");
+				return;
+			}
+			if(vc == undefined || vc.full){
+				message.channel.send("Cannot join your voice channel!")
+					.then(msg => {
+						msg.delete(10000);
+					})
+				return;
+			}
+			queue[vc.guild.id] = [args[0]];
+			vc.join().then(connection => {
+				playSong(connection);
+				});
+			return;
+		}
+		else{
+			message.channel.send("Argument not understood!")
+				.then(msg => {
+					msg.delete(10000);
+				});
+			return;
+		}
 	}
 });
+
+function playSong(connection){
+	var id = connection.channel.guild.id;
+	const stream = ytdl(queue[id][0], { filter : 'audioonly' });
+	const dispatcher = connection.playStream(stream);
+	streams[id] = stream;
+	dispatchers[id] = dispatcher;
+	dispatcher.on("end", end => {
+		queue[id].shift();
+		if(queue[id].length == 0){
+			connection.channel.leave();
+			delete queue[id];
+			return;
+		}
+		playSong(connection);
+	});
+}
 
 function getUser(id, message){
 	if(message.guild.members.get(id) == undefined){
