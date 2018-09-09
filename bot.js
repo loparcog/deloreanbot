@@ -562,29 +562,20 @@ client.on("message", async message => {
 			message.channel.send(embed);
 			return;
 		}
-		/*if(args[0] == "queue" || args[0] == "q"){
+		if(args[0] == "queue" || args[0] == "q"){
 			if(queue[id]){
-				let embed = new discord.RichEmbed()
-				.setAuthor("Song Queue", client.user.avatarURL)
-				.setColor("98FB98");
-				ytdl.getBasicInfo(queue[id][0])
-					.then(info => {
-						embed.addField(`Now Playing: ${info.title}`, `${Math.floor(info.length_seconds/60)}m ${info.length_seconds%60}s`);
-					})
-				for(var i = 1; i < queue[id].length; i++){
-					ytdl.getBasicInfo(queue[id][i])
-						.then(info => {
-							embed.setField(info.title, `${Math.floor(info.length_seconds/60)}m ${info.length_seconds%60}s`);
-						});
-				}
-				message.channel.send(embed);
-				return;
-			}
-			message.channel.send("No songs in queue!")
-				.then(msg => {
-					msg.delete(10000);
+				getQueue(id).then(embed => {
+					message.channel.send(embed);
+					return;
 				});
-		}*/
+			}
+			else{
+				message.channel.send("No songs in queue!")
+					.then(msg => {
+						msg.delete(10000);
+					});
+			}
+		}
 		if(args[0] == "exit"){
 			if(vc == undefined || !dispatchers[id]){
 				message.channel.send("Cannot find voice channel!")
@@ -613,29 +604,22 @@ client.on("message", async message => {
 			message.channel.send("Song skipped!");
 			return;
 		}
+		if(vc == undefined || vc.full){
+			message.channel.send("Cannot join your voice channel!")
+				.then(msg => {
+					msg.delete(10000);
+				})
+			return;
+		}
 		if(ytdl.validateURL(args[0])){
 			if(queue[vc.guild.id] != null){
 				queue[vc.guild.id].push(args[0]);
 				message.channel.send("Song added to queue!");
 				return;
 			}
-			if(vc == undefined || vc.full){
-				message.channel.send("Cannot join your voice channel!")
-					.then(msg => {
-						msg.delete(10000);
-					})
-				return;
-			}
 			queue[vc.guild.id] = [args[0]];
 			vc.join().then(connection => {
 				playSong(connection);
-				});
-			return;
-		}
-		else{
-			message.channel.send("Argument not understood!")
-				.then(msg => {
-					msg.delete(10000);
 				});
 			return;
 		}
@@ -656,6 +640,32 @@ function playSong(connection){
 			return;
 		}
 		playSong(connection);
+	});
+}
+
+function getQueue(id){
+	return new Promise((resolve, reject) => {
+		let embed = new discord.RichEmbed()
+			.setAuthor("Song Queue", client.user.avatarURL)
+			.setColor("98FB98");
+		ytdl.getBasicInfo(queue[id][0])
+			.then(info => {
+				embed.addField(`Now Playing: ${info.title}`, `${Math.floor(info.length_seconds/60)}m ${info.length_seconds%60}s`);
+				if(queue[id].length == 1){
+					resolve(embed);
+					return;
+				}
+			});
+		for(var i = 1; i < queue[id].length; i++){
+			ytdl.getBasicInfo(queue[id][i])
+				.then(info => {
+					embed.addField(info.title, `${Math.floor(info.length_seconds/60)}m ${info.length_seconds%60}s`);
+					if(i == queue[id].length - 1){
+						resolve(embed);
+						return;
+					}
+			});
+		}
 	});
 }
 
