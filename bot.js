@@ -577,7 +577,7 @@ client.on("message", async message => {
 			}
 		}
 		if(args[0] == "exit"){
-			if(vc == undefined || !dispatchers[id]){
+			if(vc == undefined){
 				message.channel.send("Cannot find voice channel!")
 					.then(msg => {
 						msg.delete(10000);
@@ -586,9 +586,11 @@ client.on("message", async message => {
 			}
 			vc.leave();
 			queue[id] = [];
-			dispatchers[id].end();
-			delete streams[id];
-			delete dispatchers[id];
+			if(dispatchers[id]){
+				dispatchers[id].end();
+				delete streams[id];
+				delete dispatchers[id];
+			}
 			message.channel.send("Exit successful!");
 			return;
 		}
