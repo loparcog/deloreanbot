@@ -1,10 +1,9 @@
 {
-  "name": "deloreanbot",
+  "name": "deloreanv2",
   "version": "1.0.0",
-  "description": "Discord bot",
+  "description": "Basic utility discord bot",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,12 +15,8 @@
   "bugs": {
     "url": "https://github.com/loparcog/delorianbot/issues"
   },
-  "homepage": "https://github.com/loparcog/delorianbot#readme",
   "dependencies": {
     "discord.js": "^11.4.2",
-    "opusscript": "0.0.6",
-    "weather-js": "^2.0.0",
-    "youtube-validate": "^1.2.4",
-    "ytdl-core": "^0.25.2"
+    "weather-js": "^2.0.0"
   }
 }

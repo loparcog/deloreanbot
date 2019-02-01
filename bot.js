@@ -1,74 +1,48 @@
 //DeLorean Discord Bot
-//Giacomo Loparco | Last Edited 09/09/18
+//Giacomo Loparco | Last Edited 01/09/19
 
-//botSettings is used for the bot prefix and for the bot key/token, used to identify the bot. When using it on a local machine,
-//make a botsettings.json and use that, with a token and prefix object. When using a server, use the runtime variables,
-//in this case, these are set within heroku, to help hide the bot key
+const botSettings = require("./botsettings.json");
 
-//const botSettings = require("./botsettings.json");
-
-const botSettings = {
-	token: process.env.token,
-	prefix: process.env.prefix
-}
-
-//Imports for npm modules
 const discord = require("discord.js");
-const fs = require("fs");
 const weather = require("weather-js");
-const ytval = require("youtube-validate");
-const ytdl = require("ytdl-core");
+const fs = require("fs");
 
 //initializer for the bot
 const client = new discord.Client();
 const prefix = botSettings.prefix;
 
-var jsonchange = 0;
-var randchange = 0;
-var queue = {};
-var streams = {};
-var dispatchers = {};
-
-
 client.on("ready", async () => {
 	console.log("Delorean ONLINE");
-	//WEEKLY CHANGE
-	//"Listing to" status for the bot
 	client.user.setPresence({
-		game: {name: "Week 10 | ./help", 
+		game: {name: "Facebook Story | ./help", 
 			type: 'LISTENING' },
 		status: 'online'
 	});
 });
 
-//whenever a message is sent...
-client.on("message", async message => {
+client.login(botSettings.token);
 
-	//...ignore if it's a bot or private message
+client.on("message", async message => {
 	if(message.author.bot) return;
 	if(message.channel.type === "dm") return;
 
-	//split the message into componants
 	let msg = message.content.split(" ");
 	let command = msg[0];
 	let args = msg.slice(1);
 
-	//...ignore if it doesn't start with the bot prefix
 	if(!command.startsWith(prefix)) return;
 
-	// BOT COMMANDS
-
-
-	//add server join date
-	if(command === `${prefix}userinfo`){
+	else if(command === `${prefix}userinfo`){
 		//give user information about their account
 		var user = message.author;
 		if(args.length != 0){
 			var userID = args[0].slice(2, -1);
 			if(userID.startsWith("!")) userID = userID.slice(1);
-			user = getUser(userID, message);
-			if(user == undefined){
-				message.channel.send("User not found!")
+			try{
+				user = await client.fetchUser(userID);
+			}
+			catch (error) {
+					message.channel.send("User not found!")
 					.then(msg => {
 						msg.delete(10000);
 					});
@@ -92,7 +66,7 @@ client.on("message", async message => {
 		return;
 	}
 
-	if(command === `${prefix}serverinfo`){
+	else if(command === `${prefix}serverinfo`){
 		var server = message.guild;
 		let embed = new discord.RichEmbed()
 			.setAuthor("Server Info", message.author.avatarURL)
@@ -111,7 +85,7 @@ client.on("message", async message => {
 		return;
 	}
 
-	if(command === `${prefix}ping`){
+	else if(command === `${prefix}ping` || command === `${prefix}p`){
 		//give response time of the bot
 		message.delete(10000);
 		message.channel.send(`Pong!\n${Math.floor(client.ping)}ms`)
@@ -121,104 +95,7 @@ client.on("message", async message => {
 		return;
 	}
 
-	if(command === `${prefix}weekly`){
-			if(args.length == 0){
-				//look for unhandled promise
-					var messages = {}
-					message.channel.send("Which week's playlist would you like to view?")
-						.then(msg => {
-							messages[0] = msg;
-						});
-					const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
-					collector.on("collect", message => {
-						messages[1] = message;
-						//WEEKLY CHANGE
-					if (parseInt(message) > 0 && parseInt(message) < 11){
-						var weekno = parseInt(message);
-						var embed = getAlbumEmbed(weekno);
-						message.channel.send(embed);
-						collector.stop();
-					}
-					else{
-						message.channel.send("Week not identified!")
-							.then(msg => {
-								msg.delete(10000);
-							});
-						collector.stop();
-					}
-					});
-					collector.on("end", () => {
-						for(var i = 0; i < 2; i++){
-							messages[i].delete();
-						}
-						return;
-					});
-				}
-				else{
-					//WEEKLY CHANGE
-					if (parseInt(args[0]) > 0 && parseInt(args[0]) < 11){
-						var weekno = parseInt(args[0]);
-						var embed = getAlbumEmbed(weekno);
-						message.channel.send(embed);
-					}
-					else{
-						message.channel.send("Week not identified!")
-							.then(msg => {
-								msg.delete(10000);
-							});
-						return;
-					}
-				}
-	}
-
-	if(command === `${prefix}thisweek`){
-		//Give the current week playlist
-		//WEEKLY CHANGE
-		var embed = getAlbumEmbed(10)
-		message.channel.send(embed);
-		return;
-	}
-
-	if(command === `${prefix}rand` || command === `${prefix}r`){
-		var rawdata = fs.readFileSync('randsong.json');
-		var database = JSON.parse(rawdata);
-		var len = Object.keys(database).length;
-		message.channel.send(database[Math.floor(Math.random()*len)]);
-		return;
-	}
-
-	if(command === `${prefix}addrand`){
-		var rawdata = fs.readFileSync('randsong.json');
-		var database = JSON.parse(rawdata);
-		var len = Object.keys(database).length;
-		if(args.length != 0){
-			ytval.validateUrl(args[0])
-				.then(res => {
-						database[len] = `${args[0]} \nAdded by ${message.author.username}#${message.author.discriminator}`;
-						let datafinal = JSON.stringify(database);
-						fs.writeFileSync('randsong.json', datafinal);
-						randchange++;
-						console.log(`New rand song stored, change #${randchange}`);
-						message.channel.send("Song added!");
-						return;
-				})
-				.catch(er => {
-					message.channel.send("URL not valid!")
-						.then(msg => {
-							msg.delete(10000);
-						});
-				});
-		}
-		else{
-			message.channel.send("Use ./addrand <songlink> to input a song!")
-				.then(msg => {
-					msg.delete(10000);
-				});
-		}
-		return;
-	}
-
-	if(command === `${prefix}weather`){
+	else if(command === `${prefix}weather` || command === `${prefix}w`){
 		//give the weather of a set city
 		if(args.length == 0){
 			var loc = "Hamilton ON";
@@ -255,479 +132,181 @@ client.on("message", async message => {
 		});
 	}
 
-	if(command === `${prefix}help`){
+	else if(command === `${prefix}help` || command === `${prefix}h`){
 		//Give information on all functionalities of the bot
 		let embed = new discord.RichEmbed()
 			.setAuthor("Bot Commands", client.user.avatarURL)
 			.setDescription(`Use the prefix ./ before all commands, all <arguments> are optional`)
 			.setColor("98FB98")
-			.addField("hottake", "store the last message of a given user, more information with ./hottake help. Can also be used with ./ht")
-			.addField("weekly <week#>", "get past weekly playlists and their playback links")
-			.addField("thisweek", "get this weeks playlist and its playback link")
-			.addField("rand", "give the user a random song")
-			.addField("addrand <songlink>", "add a random song to the ./rand database (youtube links only)")
+			.addField("calendar", "get the calendar for the current month")
 			.addField("weather <city>", "get the weather at a given location")
-			.addField("suggest <msg>", "suggest a function for the bot/random song")
 			.addField("ping", "check bot ping")
 			.addField("userinfo <user>", "get information on given user" )
 			.addField("serverinfo", "get information about the server")
-			.addField("about", "bot information")
-			.addField("invite", "get a link to invite this bot to your server")
 			.setFooter("Created by Giacomo#7368");
 		message.channel.send(embed);
 		return;
 	}
 
-	if(command === `${prefix}suggest`){
-		//Send a message to myself with a suggestion from the user (Gives username and server the suggestion was from)
-		if(args.length == 0){
-			message.channel.send("What would you like to suggest?")
-				.then(msg => {
-					msg.delete(10000);
-				});
-			const collector = new discord.MessageCollector(message.channel, m => m.author.id === message.author.id);//, {time: 30000});
-			collector.on("collect", message => {
-				client.users.get(`196388136656437250`).send(message.content + "\n" + 
-					`${message.author.username}#${message.author.discriminator}, from ${message.guild.name}`);
-				message.delete(10000);
-				message.channel.send("Suggestion sent!")
-					.then(msg => {
-						msg.delete(10000);
-					});
-				collector.stop()
-			});
-			collector.on("end", () => {
+	else if(command === `${prefix}calendar` || command === `${prefix}c`){
+		givenmonth = args[0];
+		if(givenmonth == undefined){
+			message.channel.send(currentMF());
 			return;
-			});
 		}
 		else{
-			client.users.get(`196388136656437250`).send(message.content.slice(9) + "\n" + 
-				`${message.author.username}#${message.author.discriminator}, from ${message.guild.name}`);	
-			message.delete(10000);
-			message.channel.send("Suggestion sent!")
-				.then(msg => {
-					msg.delete(10000);
-				});
+			currdate = new Date()
+			if(args[1] == undefined){
+				message.channel.send(customMF(givenmonth, currdate.getFullYear()));
+				return;
+			}
+			else{
+				givenyear = args[1];
+				message.channel.send(customMF(givenmonth, givenyear))
+			}
+		}
+	}
+
+	else if(command === `${prefix}task` || command === `${prefix}t`){
+		if (args.length == 0 || args[0] === 'help'){
+			let embed = new discord.RichEmbed()
+				.setAuthor("Task Commands", client.user.avatarURL)
+				.setDescription(`All possible arguments for the ./task and ./t command\n` +
+					'NOTE: You cannot start your task text with a number, but you can with quotes!')
+				.setColor("98FB98")
+				.addField("add dd mm yy <text>", "add a task to a specific date (if no year/month, next possible day)")
+				.addField("get dd mm yy", "get task from a given day (or all from current month)")
+				.addField("del dd mm yy", "delete a task you set for a given date")
+				.addField("help", "get this page")
+				.setFooter("Planner? I hardly know 'er!");
+			message.channel.send(embed);
+			return;
+		}
+		else if (args[0] === 'add'){
+			if(args[1] == undefined){
+				message.channel.send("Need a date and task argument! Try `./t help` to learn more");
+			}
+			else{
+				day = Math.floor(parseInt(args[1]));
+				if (!Number.isInteger(day) || day < 1 || day > 31){
+					message.channel.send("Invalid day!");
+					return;
+				}
+				if(args[2] == undefined){
+					message.channel.send("Need a task argument! Try `./t help` to learn more");
+					return;
+				}
+				else{
+					if(!Number.isInteger(parseInt(args[2]))){
+						// Assume it is a task
+						task = args[2];
+						console.log(args[2]);
+						message.channel.send("Task added!");
+						return;
+					}
+				}
+			}
+			return;
+		}
+		else if (args[0] === 'get'){
+			// get a task
+			return;
+		}
+		else if (args[0] === 'del'){
+			//delete a task
+			return;
+		}
+		else{
+			message.channel.send("Invalid argument! Try `./t help` to learn more");
 		}
 		return;
 	}
 
-	if(command === `${prefix}about`){
-		//Give general information about the bot
-		message.channel.send("DeLorean Bot was made by Giacomo#7368 for the McMaster MOOD Club, coded in JS and " +
-			"updated weekly. Its main functions are to give users weekly playlists as well as store people's quotes" +
-			" and hot takes to be used to call out someone at a later time. " + 
-			"For more information on the code or bot functionality, please contact myself through " +
-			"./suggest or directly through DMs.");
-		return;
-	}
-
-	if(command === `${prefix}code`){
+	else if(command === `${prefix}init`){
 		//Personal, use to track changes
 		if(message.author.id == `196388136656437250`){
-			//CHANGE PER UPDATE
-			message.channel.send("V 1.21 (M U S I C & buildpack) || https://github.com/loparcog/deloreanbot");
-
-		}
-		return;
-	}
-
-	if(command === `${prefix}invite`){
-		//Give an invite link to invite the bot to your own server
-		try{
-			let link = await client.generateInvite(['ADD_REACTIONS', 'SEND_MESSAGES', 'MANAGE_MESSAGES', 
-				'EMBED_LINKS', 'CONNECT', 'SPEAK']);
-			message.channel.send(`Invite me to your server @ ${link} !`);
-		}
-		catch(e){
-			console.log(e.stack);
-			message.channel.send("Error")
-				.then(msg => {
-					msg.delete(10000);
-				});
-		}
-		return;
-	}
-
-	//Tommy ID: 279161746193776641
-	if(command === `${prefix}getjson`){
-		//Personal, get current live json
-		if(message.author.id == `196388136656437250`){
-			message.channel.send(new discord.Attachment('./hottake.json', 'hottake.json'));
-			message.channel.send(new discord.Attachment('./randsong.json', 'randsong.json'));
-			message.channel.send(`${jsonchange} addition(s) for ht`);
-			message.channel.send(`${randchange} addition(s) for rs`);
-		}
-		return;
-	}
-
-	if((command === `${prefix}hottake`) || (command === `${prefix}ht`)){
-		if(args.length == 0 || args[0] === 'help'){
-			let embed = new discord.RichEmbed()
-				.setAuthor("Hot Take Commands", client.user.avatarURL)
-				.setDescription(`All possible arguments for the ./hottake and ./ht command`)
-				.setColor("98FB98")
-				.addField("<user>", "tag a user to store their last message sent as a hot take")
-				.addField("help", "get this page")
-				.addField("total <user>", "get the total hot takes for the server or for a given user")
-				.addField("get <user> <index>", "get a specific hot take, or random if no arguments are given")
-				.setFooter("Spicy, spicy hot takes");
-			message.channel.send(embed);
-			return;
-		}
-		else{
-			var rawdata = fs.readFileSync('hottake.json');
+			var rawdata = fs.readFileSync('tasks.json');
 			var database = JSON.parse(rawdata);
-			var inbase = false;
-			if(database[message.guild.id]){
-				inbase = true;
-			}
-			if(args[0] === 'total'){
-				if(inbase == false){
-					message.channel.send("Server not found!")
-						.then(msg => {
-							msg.delete(10000);
-						});
-					return;
-				}
-				if(args.length == 1){
-					var len = 0;
-					for (var i in database[message.guild.id]){
-						len += Object.keys(database[message.guild.id][i]).length;
-					}
-					message.channel.send(`This server has ${len} hot take(s)!`);
-				}
-				else{
-					var userID = args[1].slice(2, -1);
-					if(userID.startsWith("!")) userID = userID.slice(1);
-					user = getUser(userID, message);
-					if(user == undefined || !database[message.guild.id][userID]){
-						message.channel.send("User has not hot takes or was not found")
-							.then(msg => {
-								msg.delete(10000);
-							});
-					}
-					else{
-						len = Object.keys(database[message.guild.id][userID]).length;
-						message.channel.send(`${user.username} has ${len} hot take(s)!`);
-					}
-				}
-			}
-
-			//needs more error detection for ./ht @delorean and ./ht @delorean 5
-			else if(args[0] === 'get'){
-				if(inbase = false){
-					message.channel.send("Server not found!")
-						.then(msg => {
-							msg.delete(10000);
-						});
-					return;
-				}
-				if (args.length == 1){
-					getRandomQuote(message, database);
-				}
-				else if (args.length == 2){
-					var userID = args[1].slice(2, -1);
-					if(userID.startsWith("!")) userID = userID.slice(1);
-					var user = getUser(userID, message);
-					if(user == undefined || user.lastMessage == null || user.bot){
-						message.channel.send("User/message not found!")
-							.then(msg => {
-								msg.delete(10000);
-							});
-						return;
-					}
-					var len = Object.keys(database[message.guild.id][userID]).length;
-					var quoteno = Math.floor(Math.random() * len);
-					let embed = new discord.RichEmbed()
-						.setAuthor(`${user.username} Hot Take #${quoteno + 1}`, user.avatarURL)
-						.setDescription(database[message.guild.id][userID][quoteno].quote)
-						.setTimestamp(database[message.guild.id][userID][quoteno].ts)
-						.setColor(`98FB98`);
-					message.channel.send(embed);
-					return;
-				}
-				else if (args.length == 3){
-					var userID = args[1].slice(2, -1);
-					if(userID.startsWith("!")) userID = userID.slice(1);
-					var user = getUser(userID, message);
-					if(user == undefined || user.lastMessage == null || user.bot){
-						message.channel.send("User/message not found!")
-							.then(msg => {
-								msg.delete(10000);
-							});
-						return;
-					}
-					if(database[message.guild.id][userID][args[2] - 1]){
-						let embed = new discord.RichEmbed()
-							.setAuthor(`${user.username} Hot Take #${args[2]}`, user.avatarURL)
-							.setDescription(database[message.guild.id][userID][args[2] - 1].quote)
-							.setTimestamp(database[message.guild.id][userID][args[2] - 1].ts)
-							.setColor(`98FB98`);
-						message.channel.send(embed);
-					}
-					else{
-						message.channel.send("Quote not found!")
-							.then(msg => {
-								msg.delete(10000);
-							});
-					}
-					return;
-				}
-			}
-
-			else{
-				var userID = args[0].slice(2, -1);
-				if(userID.startsWith("!")) userID = userID.slice(1);
-				var user = getUser(userID, message);
-				if(user == undefined || user.lastMessage == null){
-					message.channel.send("User/message not found!")
-						.then(msg => {
-							msg.delete(10000);
-						});
-					return;
-				}
-				else if(user.id == message.author.id){
-					message.channel.send("You can't store your own hot takes!")
-						.then(msg => {
-							msg.delete(10000);
-						});
-					return;
-				}
-				else if (user.bot){
-					message.channel.send("Can't quote a bot!")
-						.then(msg => {
-							msg.delete(10000);
-						});
-					return;
-				}
-				jsonchange++;
-				var lastmsg = user.lastMessage.content;
-				var timestamp = new Date().toString();
-				var i = 0;
-				if(database[message.guild.id]){
-					if(database[message.guild.id][userID]){
-						var userjs = database[message.guild.id][userID]
-						while(userjs[i]){
-							i++;
-						}
-						database[message.guild.id][userID][i] = {
-							'quote': lastmsg,
-							'ts': timestamp
-						}
-					}
-					else{
-						database[message.guild.id][userID] = {
-							'0' : {
-								'quote' : lastmsg,
-								'ts' : timestamp
-							}
-						}
-					}
-				}
-				else{
-					database[message.guild.id] = {}
-					database[message.guild.id][userID] = {
-						'0' : {
-							'quote' : lastmsg,
-							'ts' : timestamp
-						}
-					}
-				}
-
-				let datafinal = JSON.stringify(database);
-				fs.writeFileSync('hottake.json', datafinal);
-				console.log(`New hot take stored, change #${jsonchange}`);
-				message.channel.send("Hot take stored!")
-			}
+			database[message.guild.id] = {};
+			let dfinal = JSON.stringify(database);
+			fs.writeFileSync('tasks.json', dfinal);
 		}
+		return;
+	}
 	return;
-	}
-
-	if((command === `${prefix}play`) || (command === `${prefix}p`)){
-		var vc = message.member.voiceChannel;
-		var id = message.guild.id;
-		//add volume?
-
-		if(args.length == 0 || args[0] === 'help'){
-			let embed = new discord.RichEmbed()
-				.setAuthor("Play Commands", client.user.avatarURL)
-				.setDescription(`All possible arguments for the ./play and ./p command`)
-				.setColor("98FB98")
-				.addField("<songlink>", "send a youtube link to play it in your voice channel, or add to your queue if a song is already playing")
-				.addField("help", "get this page")
-				.addField("queue", "get the current song queue")
-				.addField("skip", "skip the current song")
-				.addField("exit", "get the bot to leave your current voice channel")
-				.setFooter("PB&Jams");
-			message.channel.send(embed);
-			return;
-		}
-		if(args[0] == "queue" || args[0] == "q"){
-			if(queue[id]){
-				getQueue(id).then(embed => {
-					message.channel.send(embed);
-					return;
-				});
-			}
-			else{
-				message.channel.send("No songs in queue!")
-					.then(msg => {
-						msg.delete(10000);
-					});
-			}
-		}
-		if(args[0] == "exit"){
-			if(vc == undefined){
-				message.channel.send("Cannot find voice channel!")
-					.then(msg => {
-						msg.delete(10000);
-					});
-				return;
-			}
-			vc.leave();
-			queue[id] = [];
-			if(dispatchers[id]){
-				dispatchers[id].end();
-				delete streams[id];
-				delete dispatchers[id];
-			}
-			message.channel.send("Exit successful!");
-			return;
-		}
-		if(args[0] == "skip"){
-			if(!dispatchers[id]){
-				message.channel.send("No song to skip!")
-					.then(msg => {
-						msg.delete(10000);
-					});
-				return;
-			}
-			dispatchers[id].end();
-			message.channel.send("Song skipped!");
-			return;
-		}
-		if(vc == undefined || vc.full){
-			message.channel.send("Cannot join your voice channel!")
-				.then(msg => {
-					msg.delete(10000);
-				})
-			return;
-		}
-		if(ytdl.validateURL(args[0])){
-			if(queue[vc.guild.id] != null){
-				queue[vc.guild.id].push(args[0]);
-				message.channel.send("Song added to queue!");
-				return;
-			}
-			queue[vc.guild.id] = [args[0]];
-			vc.join().then(connection => {
-				playSong(connection);
-				});
-			return;
-		}
-	}
 });
 
-function playSong(connection){
-	var id = connection.channel.guild.id;
-	const stream = ytdl(queue[id][0], { filter : 'audioonly' });
-	const dispatcher = connection.playStream(stream);
-	streams[id] = stream;
-	dispatchers[id] = dispatcher;
-	dispatcher.on("end", end => {
-		queue[id].shift();
-		if(queue[id].length == 0){
-			connection.channel.leave();
-			delete queue[id];
-			return;
-		}
-		playSong(connection);
-	});
-}
 
-function getQueue(id){
-	return new Promise((resolve, reject) => {
-		let embed = new discord.RichEmbed()
-			.setAuthor("Song Queue", client.user.avatarURL)
-			.setColor("98FB98");
-		ytdl.getBasicInfo(queue[id][0])
-			.then(info => {
-				embed.addField(`Now Playing: ${info.title}`, `${Math.floor(info.length_seconds/60)}m ${info.length_seconds%60}s`);
-				if(queue[id].length == 1){
-					resolve(embed);
-					return;
-				}
-			});
-		for(var i = 1; i < queue[id].length; i++){
-			ytdl.getBasicInfo(queue[id][i])
-				.then(info => {
-					embed.addField(info.title, `${Math.floor(info.length_seconds/60)}m ${info.length_seconds%60}s`);
-					if(i == queue[id].length - 1){
-						resolve(embed);
-						return;
-					}
-			});
-		}
-	});
-}
-
-function getUser(id, message){
-	if(message.guild.members.get(id) == undefined){
-		return undefined;
+function MonthFormat(day, curr){
+	months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
+	mon = day.getMonth();
+	year = day.getFullYear(); 
+	// First is 0-6, Sunday to Saturday
+	/*
+	An ideal calendar format would be:
+	Sun  Mon  Tue  Wed  Thu  Fri  Sat
+              1    2    3    4    5
+    6    7    8    9    10   11   12
+    13   14!  15!  16!  17   18   19
+    20   21   22   23   24   25   26
+    27   28   29   30   31
+	*/
+	LY = false;
+	if(new Date(year, 1, 29).getDate() == 29){
+		LY = true;
 	}
-	else{
-		return message.guild.members.get(id).user;
-	}
-}
-
-function getRandomQuote(message, database){
-	var len = Object.keys(database[message.guild.id]).length;
-	var userobj = Math.floor(Math.random() * len);
-	var i = 0;
-	for(var j in database[message.guild.id]){
-		if(i == userobj){
-			len = Object.keys(database[message.guild.id][j]).length;
-			var quoteno = Math.floor(Math.random() * len);
-			var user = message.guild.members.get(j).user;
-			let embed = new discord.RichEmbed()
-				.setAuthor(`${user.username} Hot Take #${quoteno + 1}`, user.avatarURL)
-				.setDescription(database[message.guild.id][j][quoteno].quote)
-				.setTimestamp(database[message.guild.id][j][quoteno].ts)
-				.setColor(`98FB98`);
-			message.channel.send(embed);
-			return;
+	dotw = new Date(year, mon, 1).getDay();
+	nodays = 30;
+	if(mon == 1){
+		if(LY){
+			nodays = 29;
 		}
 		else{
-			i++;
+			nodays = 28;
 		}
 	}
-	return;
+	else if([0, 2, 4, 6, 7, 9, 11].includes(mon)){
+		nodays = 31;
+	}
+	daynow = -1
+	if(curr){
+		daynow = day.getDate();
+	}
+	// TODO: Put up the month/year accessing
+	cal = "```css\n>"+ months[mon] + " "+ year +"\nSun  Mon  Tue  Wed  Thu  Fri  Sat\n";
+	cal += ("     ").repeat(dotw);
+	var i = 1;
+	while(i <= nodays){
+		if (dotw == 7){
+			dotw = 0;
+			cal += "\n";
+		}
+		if (i < 10){
+			cal += (i + " ");
+		}
+		else{
+			cal += (i);
+		}
+		if(i == daynow){
+			cal += "<  "
+		}
+		else{
+			cal += "   "
+		}
+		dotw++;
+		i++;
+	}
+	cal += "\n```";
+	return cal;
 }
 
-function getAlbumEmbed(index){
-	var rawdata = fs.readFileSync('albumdb.json');
-	var albumdb = JSON.parse(rawdata);
-	var weekno = index;
-	var weekdata = albumdb[weekno];
-	let embed = new discord.RichEmbed()
-		.setAuthor(`MOOD Week ${weekno}`, client.user.avatarURL)
-		.setColor(`98FB98`);
-	if(weekdata.img != ""){
-		embed.setThumbnail(weekdata.img);
-	}
-	var albums = weekdata.albums.split(" π ");
-	var set = []
-	for(var i = 0; i < albums.length; i++){
-		set = albums[i].split(" - ");
-		embed.addField(set[0],set[1]);
-	}
-	embed.addBlankField()
-		.addField("Playback Resources", weekdata.links)
-		.setDescription(`*${weekdata.date}*`)
-		.setFooter(`McMaster MOOD Club 2018`)
-	return(embed);
+function currentMF(){
+	day = new Date();
+	return MonthFormat(day, true);
 }
 
-//Start the bot with the given token
-client.login(botSettings.token);
+function customMF(month, year){
+	newmo = month + 1;
+	day = new Date(year, newmo);
+	return MonthFormat(day, false);
+}

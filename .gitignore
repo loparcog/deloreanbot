@@ -61,3 +61,7 @@ typings/
 .next
 
 botsettings.json
+
+tasks.json
+
+package-lock.json
